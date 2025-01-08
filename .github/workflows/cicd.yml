@@ -20,10 +20,25 @@ jobs:
         with:
           username: ${{ secrets.dockeruser }} # github secrets
           password: ${{ secrets.dockertoken }} # github secrets
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.dockeruser }}/catexer-actions:latest
+      
+      - name: Set Environment Variables
+        run: |
+            echo "IMAGE_NAME=crazyguy888/catexer-actions" >> $GITHUB_ENV
+            echo "IMAGE_TAG=0.0.${{ github.run_number }}" >> $GITHUB_ENV
+  
+      - name: Build Docker Compose Image
+        run: |
+            docker-compose build --no-cache
+            docker tag IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+        env:
+            IMAGE_NAME: ${{ env.IMAGE_NAME }}
+            IMAGE_TAG: ${{ env.IMAGE_TAG }}
+  
+      - name: Push Docker Image
+        run: |
+            docker images    
+            docker push $IMAGE_NAME:$IMAGE_TAG
+            docker push $IMAGE_NAME:latest
+        env:
+            IMAGE_NAME: ${{ env.IMAGE_NAME }}
+            IMAGE_TAG: ${{ env.IMAGE_TAG }}
