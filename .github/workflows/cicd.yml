@@ -25,6 +25,13 @@ jobs:
         run: |
             echo "IMAGE_NAME=crazyguy888/catexer-actions" >> $GITHUB_ENV
             echo "IMAGE_TAG=0.0.${{ github.run_number }}" >> $GITHUB_ENV
+            echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> $GITHUB_ENV
+            echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> $GITHUB_ENV
+            echo "MYSQL_USER=${{ vars.MYSQL_USER }}" >> $GITHUB_ENV
+            echo "MYSQL_DATABASE=${{ vars.MYSQL_DATABASE }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
+            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
   
       - name: Build Docker Compose Image
         run: |
