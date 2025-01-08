@@ -28,6 +28,8 @@ jobs:
   
       - name: Build Docker Compose Image
         run: |
+            pwd
+            ls
             docker-compose build --no-cache
             docker tag IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
         env:
