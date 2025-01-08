@@ -32,13 +32,18 @@ jobs:
             echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
             echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
             echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
-  
+      
+      - name: Debug Environment Variables
+        run: |
+              echo "IMAGE_NAME=${IMAGE_NAME}"
+              echo "IMAGE_TAG=${IMAGE_TAG}"
+
       - name: Build Docker Compose Image
         run: |
             pwd
             ls
             docker compose build --no-cache
-            docker tag IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
         env:
             IMAGE_NAME: ${{ env.IMAGE_NAME }}
             IMAGE_TAG: ${{ env.IMAGE_TAG }}
@@ -46,8 +51,8 @@ jobs:
       - name: Push Docker Image
         run: |
             docker images    
-            docker push $IMAGE_NAME:$IMAGE_TAG
-            docker push $IMAGE_NAME:latest
+            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+            docker push ${IMAGE_NAME}:latest
         env:
             IMAGE_NAME: ${{ env.IMAGE_NAME }}
             IMAGE_TAG: ${{ env.IMAGE_TAG }}
