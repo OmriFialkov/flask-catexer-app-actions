@@ -109,10 +109,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          output: text # output and not output-format.
-
+          
       - name: Deploy to AWS EC2
         run: |
+           set -ex
            INSTANCE_ID=$(aws ec2 run-instances \
               --region us-east-1 \
               --image-id ami-01816d07b1128cd2d \
@@ -140,9 +140,9 @@ jobs:
 
            aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region us-east-1
 
-           PUBLIC_IP=\$(aws ec2 describe-instances \
+           PUBLIC_IP=$(aws ec2 describe-instances \
                     --region us-east-1 \
-                    --instance-ids "\$INSTANCE_ID" \
+                    --instance-ids "$INSTANCE_ID" \
                     --query 'Reservations[0].Instances[0].PublicIpAddress' \
                     --output text)
                 
