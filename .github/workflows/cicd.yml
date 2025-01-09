@@ -21,7 +21,7 @@ jobs:
           username: ${{ secrets.dockeruser }} # github secrets
           password: ${{ secrets.dockertoken }} # github secrets
       
-      - name: Set Environment Variables
+      - name: Set Environment Variables # GITHUB_ENV - just to access them quicker in current job by name only.
         run: |
             echo "IMAGE_NAME=crazyguy888/catexer-actions" >> $GITHUB_ENV
             echo "IMAGE_TAG=0.0.${{ github.run_number }}" >> $GITHUB_ENV
@@ -56,3 +56,35 @@ jobs:
         env:
             IMAGE_NAME: ${{ env.IMAGE_NAME }}
             IMAGE_TAG: ${{ env.IMAGE_TAG }}
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Load Variables
+        run: |  
+            echo "IMAGE_NAME=crazyguy888/catexer-actions" >> $GITHUB_ENV
+            echo "IMAGE_TAG=0.0.${{ github.run_number }}" >> $GITHUB_ENV
+            echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> $GITHUB_ENV
+            echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> $GITHUB_ENV
+            echo "MYSQL_USER=${{ vars.MYSQL_USER }}" >> $GITHUB_ENV
+            echo "MYSQL_DATABASE=${{ vars.MYSQL_DATABASE }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
+            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Run Project
+        run: |
+            ls
+            docker compose up -d --pull
+            sleep 1
+            docker compose ps
+      
+      - name: Run Tests
+        run: |
+            sleep 3
+            docker compose logs
+            echo "port being tested: ${{ env.PORT }}"
+            curl -f http://localhost:${{ env.PORT }}
+            
