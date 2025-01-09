@@ -89,4 +89,50 @@ jobs:
             docker compose logs
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
-            
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test # ensures that the test job has completed successfully.
+    steps:
+      - name: Install AWS CLI
+        run: |
+          if ! command -v aws &> /dev/null; then
+           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+           unzip awscliv2.zip
+           sudo ./aws/install
+           aws --version
+          fi
+
+      - name: Configure AWS Credentials # can be used also without built action, but it is recommended.
+        uses: aws-actions/configure-aws-credentials@v2 # with aws configure set commands.
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          output-format: text
+
+      - name: Deploy to AWS EC2
+        run: |
+           INSTANCE_ID=$(aws ec2 run-instances \
+              --region us-east-1 \
+              --image-id ami-01816d07b1128cd2d \
+              --instance-type t2.micro \
+              --key-name privatekey \
+              --security-groups flask-mysql \
+              --iam-instance-profile Name=access-to-s3 \
+              --user-data '#!/bin/bash
+            yum update -y
+            yum install -y yum-utils device-mapper-persistent-data lvm2
+            amazon-linux-extras enable docker
+            yum install -y docker
+            systemctl start docker
+            systemctl enable docker
+            usermod -aG docker ec2-user
+            newgrp docker
+            DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r ".tag_name")
+            curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose' \
+              --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=project}]' \
+              --query 'Instances[0].InstanceId' \
+              --output text)
+           
+           echo "instance-id: $INSTANCE_ID" >> $GITHUB_ENV 
