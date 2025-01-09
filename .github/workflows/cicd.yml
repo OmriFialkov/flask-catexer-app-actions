@@ -95,12 +95,13 @@ jobs:
     steps:
       - name: Install AWS CLI
         run: |
+          set -ex
           if ! command -v aws &> /dev/null; then
            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
            unzip awscliv2.zip
            sudo ./aws/install
-           aws --version
           fi
+          aws --version
 
       - name: Configure AWS Credentials # can be used also without built action, but it is recommended.
         uses: aws-actions/configure-aws-credentials@v2 # with aws configure set commands.
@@ -108,7 +109,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          output-format: text
+          output: text # output and not output-format.
 
       - name: Deploy to AWS EC2
         run: |
@@ -135,4 +136,14 @@ jobs:
               --query 'Instances[0].InstanceId' \
               --output text)
            
-           echo "instance-id: $INSTANCE_ID" >> $GITHUB_ENV 
+           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV # GITHUB_ENV 
+
+           aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region us-east-1
+
+           PUBLIC_IP=\$(aws ec2 describe-instances \
+                    --region us-east-1 \
+                    --instance-ids "\$INSTANCE_ID" \
+                    --query 'Reservations[0].Instances[0].PublicIpAddress' \
+                    --output text)
+                
+           echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
