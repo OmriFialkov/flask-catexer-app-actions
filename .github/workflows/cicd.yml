@@ -176,7 +176,7 @@ jobs:
             cat ~/.ssh/id_rsa 
                  
 
-      - name: scp and ssh
+      - name: scp
         run: |
             set -ex
             ls -ltra
@@ -185,11 +185,20 @@ jobs:
                 init.sql \
                 ec2-user@${{ env.PUBLIC_IP }}:/home/ec2-user/
 
+      - name: ssh - check user data script and run project
+        run: |
+            set -ex
             ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@${{ env.PUBLIC_IP }} << EOF
+                echo "now in ec2, waiting for user-data script to end successfully ( installing docker ).."
+                while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
+                    echo "sadly still waiting.."
+                    sleep 3
+                done
+                echo "user-data script finished successfully"
                 newgrp docker
                 cd /home/ec2-user/
                 ls -ltra
                 docker --version
-                docker-compose.yaml --version
+                docker-compose --version
                 docker-compose up -d --quiet-pull
-                << EOF
+               << EOF
