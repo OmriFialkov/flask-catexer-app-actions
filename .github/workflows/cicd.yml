@@ -139,7 +139,7 @@ jobs:
               --query 'Instances[0].InstanceId' \
               --output text)
            
-           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV # GITHUB_ENV 
+           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
            aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region us-east-1
 
