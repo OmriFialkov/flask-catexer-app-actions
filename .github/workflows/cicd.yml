@@ -175,6 +175,17 @@ jobs:
             chmod 600 ~/.ssh/id_rsa 
             cat ~/.ssh/id_rsa 
                  
+      - name: generate .env file for ec2 instance variables
+        run: |
+            echo "IMAGE_NAME=crazyguy888/catexer-actions" > .env
+            echo "IMAGE_TAG=latest" >> .env
+            echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> .env
+            echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> .env
+            echo "MYSQL_USER=${{ vars.MYSQL_USER }}" >> .env
+            echo "MYSQL_DATABASE=${{ vars.MYSQL_DATABASE }}" >> .env
+            echo "PORT=${{ vars.PORT }}" >> .env
+            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
 
       - name: scp
         run: |
@@ -183,6 +194,7 @@ jobs:
             scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
                 docker-compose.yaml \
                 init.sql \
+                .env \
                 ec2-user@${{ env.PUBLIC_IP }}:/home/ec2-user/
 
       - name: ssh - check user data script and run project
