@@ -167,18 +167,28 @@ jobs:
              sudo apt-get install -y openssh-client
             fi
 
+      - name: write ssh private key to file # doesn't work directly from secrets.
+        run: |
+            set -ex
+            mkdir -p ~/.ssh
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa 
+            cat ~/.ssh/id_rsa 
+                 
+
       - name: scp and ssh
         run: |
             set -ex
             ls -ltra
-            scp -i ${{ secrets.SSH_PRIVATE_KEY }} -o StrictHostKeyChecking=no \
+            scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
                 docker-compose.yaml \
                 init.sql \
                 ec2-user@${{ env.PUBLIC_IP }}:/home/ec2-user/
 
-            ssh -i ${{ secrets.SSH_PRIVATE_KEY }} -o StrictHostKeyChecking=no ec2-user@${{ env.PUBLIC_IP }} << EOF
+            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@${{ env.PUBLIC_IP }} << EOF
                 newgrp docker
                 cd /home/ec2-user/
+                ls -ltra
                 docker --version
                 docker-compose.yaml --version
                 docker-compose up -d --quiet-pull
