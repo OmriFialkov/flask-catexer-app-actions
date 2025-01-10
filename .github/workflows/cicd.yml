@@ -162,8 +162,10 @@ jobs:
       - name: install ssh client
         run: |
             set -ex
-            sudo apt-get update
-            sudo apt-get install -y openssh-client
+            if ! ssh -V 2>&1 /dev/null; then 
+             sudo apt-get update
+             sudo apt-get install -y openssh-client
+            fi
 
       - name: scp and ssh
         run: |
@@ -178,6 +180,6 @@ jobs:
                 newgrp docker
                 cd /home/ec2-user/
                 docker --version
-                docker-compose --version
+                docker-compose.yaml --version
                 docker-compose up -d --quiet-pull
                 << EOF
