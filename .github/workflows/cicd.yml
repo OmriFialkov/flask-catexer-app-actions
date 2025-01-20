@@ -116,6 +116,10 @@ jobs:
            $SSH_USER@$REMOTE_HOST:/home/$SSH_USER/hey
 
       - name: ssh and apply yamls
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
         run: |
           set -ex
           sshpass -p $SSH_PASSWORD ssh -v -o StrictHostKeyChecking=no \
