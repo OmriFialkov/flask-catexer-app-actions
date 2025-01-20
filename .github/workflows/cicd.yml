@@ -91,7 +91,7 @@ jobs:
             curl -f http://localhost:${{ env.PORT }}
   deploy-k8s:
     runs-on: ubuntu-latest
-    needs: test # ensures that the test job has completed successfully.
+    needs: test # ensures that the test job has completed successfully to proceed.
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
