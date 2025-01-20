@@ -99,8 +99,8 @@ jobs:
       - name: modify flask version in file flask-k8s.yaml
         run: |
             set -ex
-            sed -i "s/latest/0.0.${{ github.run_number }}/g" ./flask-k8s.yaml
-            cat flask-k8s.yaml
+            sed -i "s/latest/0.0.${{ github.run_number }}/g" ./k8s-config/flask-k8s.yaml
+            cat ./k8s-config/flask-k8s.yaml
 
       - name: scp k8s yamls to vm
         env:
@@ -110,12 +110,12 @@ jobs:
         run: |
           set -ex
           sshpass -p $SSH_PASSWORD scp -v -o StrictHostKeyChecking=no \
-           db-k8s.yaml \
-           flask-k8s.yaml \
-           vars-k8s.yaml \
+           k8s-config/db-k8s.yaml \
+           k8s-config/flask-k8s.yaml \
+           k8s-config/vars-k8s.yaml \
            $SSH_USER@$REMOTE_HOST:/home/$SSH_USER/hey
 
-      - name: ssh and apply yamls
+      - name: ssh and apply YAMLs
         env:
           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
           SSH_USER: ${{ secrets.SSH_USER }}
