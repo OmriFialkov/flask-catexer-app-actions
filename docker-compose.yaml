@@ -4,7 +4,7 @@ services:
   flask-app:
     build: . # build from the current directory, dockerfile.
     container_name: flask
-    image: crazyguy888/catexer-actions:latest # to which image docker compose directing to install.
+    image: ${IMAGE_NAME:-crazyguy888/catexer-actions}:${IMAGE_TAG:-latest} # to which image docker compose directing to install.
     ports:
       - "${PORT}:${PORT}" # using the PORT variable from the .env file.
     environment:
