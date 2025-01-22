@@ -72,16 +72,14 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      
-      - name: Install AWS CLI
-        run: |
-          set -ex
-          if ! command -v aws &> /dev/null; then
-           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-           unzip awscliv2.zip
-           sudo ./aws/install
-          fi
-          aws --version
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with: 
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init 
 
       - name: Configure AWS Credentials # can be used also without built action, but it is recommended.
         uses: aws-actions/configure-aws-credentials@v2 # with aws configure set commands.
@@ -89,111 +87,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
-      - name: Deploy to AWS EC2
-        run: |
-           set -ex
-           INSTANCE_ID=$(aws ec2 run-instances \
-              --region us-east-1 \
-              --image-id ami-01816d07b1128cd2d \
-              --instance-type t2.micro \
-              --key-name privatekey \
-              --security-groups flask-mysql \
-              --iam-instance-profile Name=access-to-s3 \
-              --user-data '#!/bin/bash
-            yum update -y
-            yum install -y yum-utils device-mapper-persistent-data lvm2
-            amazon-linux-extras enable docker
-            yum install -y docker
-            systemctl start docker
-            systemctl enable docker
-            usermod -aG docker ec2-user
-            newgrp docker
-            DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r ".tag_name")
-            curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose' \
-              --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=project}]' \
-              --query 'Instances[0].InstanceId' \
-              --output text)
-           
-           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
-           aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region us-east-1
-
-           PUBLIC_IP=$(aws ec2 describe-instances \
-                    --region us-east-1 \
-                    --instance-ids "$INSTANCE_ID" \
-                    --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                    --output text)
-                
-           echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
-      
-      - name: check ssh connection status
-        run: |
-            set -ex
-            while ! nc -z ${{ env.PUBLIC_IP }} 22; do
-                echo "waiting for ssh test to succeed.."
-                sleep 3
-            done
-
-      - name: install ssh client
-        run: |
-            set -ex
-            if ! ssh -V 2>&1 /dev/null; then 
-             sudo apt-get update
-             sudo apt-get install -y openssh-client
-            fi
-
-      - name: write ssh private key to file # doesn't work directly from secrets.
-        run: |
-            set -ex
-            mkdir -p ~/.ssh
-            echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa 
-            cat ~/.ssh/id_rsa 
-                 
-      - name: generate .env file for ec2 instance variables
-        run: |
-            echo "IMAGE_NAME=crazyguy888/catexer-actions" > .env
-            echo "IMAGE_TAG=latest" >> .env
-            echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> .env
-            echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> .env
-            echo "MYSQL_USER=${{ vars.MYSQL_USER }}" >> .env
-            echo "MYSQL_DATABASE=${{ vars.MYSQL_DATABASE }}" >> .env
-            echo "PORT=${{ vars.PORT }}" >> .env
-            echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
-            echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
-
-      - name: scp
-        run: |
-            set -ex
-            ls -ltra
-            scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
-                docker-compose.yaml \
-                init.sql \
-                .env \
-                ec2-user@${{ env.PUBLIC_IP }}:/home/ec2-user/
-
-      - name: ssh - check user data script and run project
-        run: |
-            set -ex
-            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@${{ env.PUBLIC_IP }} << EOF
-                echo "now in ec2, waiting for user-data script to end successfully ( installing docker ).."
-                while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
-                    echo "sadly still waiting.."
-                    sleep 3
-                done
-                echo "user-data script finished successfully"
-                newgrp docker
-                cd /home/ec2-user/
-                ls -ltra
-                docker --version
-                docker-compose --version
-                docker-compose up -d --quiet-pull
-               << EOF
-
-
-
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
 
   # disabled k8s deploy job temporarily for terraform testing with aws deploy.
