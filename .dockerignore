@@ -1,0 +1,25 @@
+# Exclude Terraform-specific files
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+crash.log
+
+# Exclude temporary files and logs
+*.log
+*.bak
+*.tmp
+*.swp
+*.swo
+.DS_Store
+
+# Exclude Git-related files
+.git/
+.gitignore
+
+# Exclude other unnecessary files or directories
+node_modules/
+vendor/

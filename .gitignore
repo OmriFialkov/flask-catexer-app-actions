@@ -1,1 +1,22 @@
 .env
+# Local Terraform directories
+**/.terraform/
+**/.terraform.lock.hcl
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+
+# Ignore override files as they are intended to be local
+*.tfvars
+*.tfvars.json
+
+# Ignore the plan output files
+*.tfplan
+
+# Ignore sensitive variable files
+*.auto.tfvars
+*.auto.tfvars.json
