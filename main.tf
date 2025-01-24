@@ -6,30 +6,13 @@ resource "aws_security_group" "flask_sg" {
   name        = "flask-app-sg-tf"
   description = "Security group for Flask app"
 
-  ingress {
-    from_port   = 3308
-    to_port     = 3308
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  lifecycle {
+    create_before_destroy = true
   }
 
   ingress {
     from_port   = 5002
     to_port     = 5002
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
