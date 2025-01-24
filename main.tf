@@ -2,6 +2,11 @@ provider "aws" {
   region = "us-east-1" # Change to your preferred region
 }
 
+variable "image_tag" {
+  description = "TAG of the docker image according to github run number."
+  type        = string 
+}
+
 resource "random_id" "sg_suffix" {
   byte_length = 4
 }
@@ -54,11 +59,15 @@ resource "aws_instance" "flask_instance" {
               usermod -aG docker ec2-user
               newgrp docker
               yum install -y libxcrypt-compat
+
               curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               chmod +x /usr/local/bin/docker-compose
+
               git clone https://github.com/OmriFialkov/flask-catexer-app-actions.git /home/ec2-user/flask-app
               aws s3 cp s3://docker-gifs-project/.env /home/ec2-user/flask-app
               cd /home/ec2-user/flask-app
+
+              export IMAGE_TAG=${image_tag}
               docker-compose up -d
               EOF
 

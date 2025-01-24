@@ -89,6 +89,8 @@ jobs:
           aws-region: us-east-1
 
       - name: Terraform Apply
+        env:
+          TF_VAR_image_tag: "0.0.${{ github.run_number }}"
         run: terraform apply -auto-approve
 
 
