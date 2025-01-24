@@ -67,7 +67,7 @@ resource "aws_instance" "flask_instance" {
               aws s3 cp s3://docker-gifs-project/.env /home/ec2-user/flask-app
               cd /home/ec2-user/flask-app
 
-              export IMAGE_TAG=${image_tag}
+              export IMAGE_TAG=${var.image_tag}
               docker-compose up -d
               EOF
 
