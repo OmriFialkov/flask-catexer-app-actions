@@ -72,7 +72,7 @@ resource "aws_instance" "flask_instance" {
               EOF
 
   tags = {
-    Name = "FlaskAppInstance"
+    Name = "CICD-TERRAFORM-DEPLOY"
   }
 }
 
