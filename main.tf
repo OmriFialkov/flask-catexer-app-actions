@@ -2,8 +2,12 @@ provider "aws" {
   region = "us-east-1" # Change to your preferred region
 }
 
+resource "random_id" "sg_suffix" {
+  byte_length = 4
+}
+
 resource "aws_security_group" "flask_sg" {
-  name        = "flask-app-sg-tf"
+  name        = "flask-app-sg-tf-${random_id.sg_suffix.hex}"
   description = "Security group for Flask app"
 
   lifecycle {
