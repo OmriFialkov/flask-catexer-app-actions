@@ -51,8 +51,9 @@ resource "aws_instance" "flask_instance" {
   user_data = <<-EOF
               #!/bin/bash
               
-              yum install -y gcc libffi-devel python3-dev python3-pip
-              pip3 install --upgrade azure-cli
+              sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+              sudo curl -o /etc/yum.repos.d/azure-cli.repo https://packages.microsoft.com/config/rhel/8/prod.repo
+              sudo yum install -y azure-cli
 
               AZURE_CLIENT_ID="${var.azure_client_id}"
               AZURE_TENANT_ID="${var.azure_tenant_id}"
