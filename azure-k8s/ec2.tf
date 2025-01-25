@@ -50,9 +50,10 @@ resource "aws_instance" "flask_instance" {
 
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
-              curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
               
+              yum install -y gcc libffi-devel python3-dev python3-pip
+              pip3 install --upgrade azure-cli
+
               AZURE_CLIENT_ID="${var.azure_client_id}"
               AZURE_TENANT_ID="${var.azure_tenant_id}"
               AZURE_CLIENT_SECRET="${var.azure_client_secret}"
