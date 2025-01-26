@@ -6,7 +6,7 @@
 # Terraform state files
 *.tfstate
 *.tfstate.backup
-
+*aks.json
 # Crash log files
 crash.log
 

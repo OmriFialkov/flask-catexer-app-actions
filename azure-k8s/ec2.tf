@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # Change to your preferred region, 7, deploy could be commented-out.
+  region = "us-east-1" # Change to your preferred region, 7 v1, deploy could be commented-out, 26/1 deploy.
 }
 
 # Define any required variables in the Terraform file
