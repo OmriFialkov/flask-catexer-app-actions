@@ -106,6 +106,10 @@ jobs:
           terraform apply -auto-approve
 
       - name: Cleanup - Terraform Destroy
+        env:
+          TF_VAR_azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          TF_VAR_azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          TF_VAR_azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           cd azure-k8s
           terraform destroy -auto-approve
