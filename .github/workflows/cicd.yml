@@ -105,6 +105,11 @@ jobs:
           cd azure-k8s
           terraform apply -auto-approve
 
+      - name: Cleanup - Terraform Destroy
+        run: |
+          cd azure-k8s
+          terraform destroy -auto-approve
+
 
 
 
