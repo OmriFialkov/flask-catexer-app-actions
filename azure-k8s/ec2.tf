@@ -74,14 +74,20 @@ resource "aws_instance" "flask_instance" {
 
   provisioner "remote-exec" {
     inline = [
-      "while [ ! -f /tmp/azlogin.log ]; do echo 'waiting for az login to succeed..'; sleep 5; done",
-      "echo 'now connecting to azure cluster!'",
-      "az aks get-credentials --resource-group azure-aks-rg --name aks-cluster-omri",
-      "curl -LO 'https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl'",
-      "chmod +x kubectl && sudo mv kubectl /usr/local/bin/",
-      "cd /home/ec2-user/flask-app",
-      "echo 'now applying k8s config files!'",
-      "kubectl apply -f ./k8s-config"
+    "while [ ! -f /tmp/azlogin.log ]; do echo 'waiting for az login to succeed..'; sleep 5; done",
+    "echo 'now connecting to azure cluster!'",
+    "az aks get-credentials --resource-group azure-aks-rg --name aks-cluster-omri",
+
+    # Download kubectl
+    "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
+    "if [ -f ./kubectl ]; then chmod +x kubectl && sudo mv kubectl /usr/local/bin/; else echo 'kubectl download failed'; exit 1; fi",
+
+    # Change directory to the app folder
+    "if [ -d /home/ec2-user/flask-app ]; then cd /home/ec2-user/flask-app; else echo 'Directory /home/ec2-user/flask-app not found'; exit 1; fi",
+
+    # Apply Kubernetes configurations
+    "echo 'now applying k8s config files!'",
+    "kubectl apply -f ./k8s-config"
     ]
 
     connection {
