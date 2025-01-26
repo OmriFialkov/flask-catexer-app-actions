@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # Change to your preferred region
+  region = "us-east-1" # Change to your preferred region, 7, deploy could be commented-out.
 }
 
 # Define any required variables in the Terraform file
@@ -50,6 +50,7 @@ resource "aws_instance" "flask_instance" {
 
   user_data = <<-EOF
               #!/bin/bash
+              sudo yum install -y git
               git clone https://github.com/OmriFialkov/flask-catexer-app-actions.git /home/ec2-user/flask-app
 
               sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
@@ -76,6 +77,8 @@ resource "aws_instance" "flask_instance" {
       "while [ ! -f /tmp/azlogin.log ]; do echo 'waiting for az login to succeed..'; sleep 5; done",
       "echo 'now connecting to azure cluster!'",
       "az aks get-credentials --resource-group azure-aks-rg --name aks-cluster-omri",
+      "curl -LO 'https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl'",
+      "chmod +x kubectl && sudo mv kubectl /usr/local/bin/",
       "cd /home/ec2-user/flask-app",
       "echo 'now applying k8s config files!'",
       "kubectl apply -f ./k8s-config"
