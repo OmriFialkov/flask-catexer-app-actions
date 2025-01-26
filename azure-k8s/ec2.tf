@@ -58,28 +58,30 @@ resource "aws_instance" "flask_instance" {
               AZURE_CLIENT_ID="${var.azure_client_id}"
               AZURE_TENANT_ID="${var.azure_tenant_id}"
               AZURE_CLIENT_SECRET="${var.azure_client_secret}"
-              
+
+              su - ec2-user -c "              
               az login --service-principal \
                   --username $AZURE_CLIENT_ID \
                   --password $AZURE_CLIENT_SECRET \
                   --tenant $AZURE_TENANT_ID
+              "
 
               az account show
               EOF
 
 
-#   provisioner "remote-exec" {
-#     inline = [
-#       "echo 'Provisioning complete!'"
-#     ]
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Provisioning complete!'"
+    ]
 
-#     connection {
-#       type        = "ssh"
-#       user        = "ec2-user"
-#       private_key = 
-#       host        = self.public_ip
-#     }
-#   }
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/my-aws-key.pem")
+      host        = self.public_ip
+    }
+  }
 
   tags = {
     Name = "CICD-TERRAFORM-K8S-AZURE-DEPLOY"
