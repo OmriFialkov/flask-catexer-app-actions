@@ -50,7 +50,8 @@ resource "aws_instance" "flask_instance" {
 
   user_data = <<-EOF
               #!/bin/bash
-              
+              git clone https://github.com/OmriFialkov/flask-catexer-app-actions.git /home/ec2-user/flask-app
+
               sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
               sudo curl -o /etc/yum.repos.d/azure-cli.repo https://packages.microsoft.com/config/rhel/8/prod.repo
               sudo yum install -y azure-cli
@@ -66,13 +67,18 @@ resource "aws_instance" "flask_instance" {
                   --tenant $AZURE_TENANT_ID
               "
 
-              az account show
+              echo 'az login succeeded!' > /tmp/azlogin.log
               EOF
 
 
   provisioner "remote-exec" {
     inline = [
-      "echo 'Provisioning complete!'"
+      "while [ ! -f /tmp/azlogin.log ]; do echo 'waiting for az login to succeed..'; sleep 5; done",
+      "echo 'now connecting to azure cluster!'",
+      "az aks get-credentials --resource-group azure-aks-rg --name aks-cluster-omri",
+      "cd /home/ec2-user/flask-app",
+      "echo 'now applying k8s config files!'",
+      "kubectl apply -f ./k8s-config"
     ]
 
     connection {

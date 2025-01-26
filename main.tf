@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # Change to your preferred region
+  region = "us-east-1" # Change to your preferred region, 6
 }
 
 variable "image_tag" {
