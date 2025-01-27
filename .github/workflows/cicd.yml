@@ -86,13 +86,12 @@ jobs:
           aws-region: us-east-1
 
       - name: azure login # to run kubectl in runner
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          auth-type: SERVICE_PRINCIPAL
+        run: |
+          set -ex
+          az login --service-principal \
+              --username ${{ secrets.AZURE_CLIENT_ID }}  \
+              --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+              --tenant ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Terraform Init
         env:
