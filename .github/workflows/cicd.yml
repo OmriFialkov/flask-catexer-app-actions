@@ -110,7 +110,7 @@ jobs:
       - name: setup kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: '1.28.0'
+          version: '1.31.0'
           
       - name: Set AKS Context # uses az aks get-credentials internally.
         uses: azure/aks-set-context@v3
