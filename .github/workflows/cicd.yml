@@ -66,16 +66,65 @@ jobs:
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
 
-  # deploy: # exer 7 v2 deploy with azure k8s terraform k8s infrastructure, 27/1.
-  #   runs-on: ubuntu-latest
-  #   needs: build-Test # ensures that the build-test job has completed successfully.
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+  deploy: # exer 7 v2 deploy with azure k8s terraform k8s infrastructure, 27/1.
+    runs-on: ubuntu-latest
+    needs: build-Test # ensures that the build-test job has completed successfully.
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
+      - name: setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with: 
+          terraform_wrapper: false 
 
+      - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
+      - name: azure login # to run kubectl in runner
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Terraform Init
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          cd azure-k8s-v2
+          terraform init
+
+      - name: Terraform Apply # update cluster infrastructure.
+        env:
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          cd azure-k8s-v2
+          terraform apply -auto-approve
+
+      - name: setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: '1.28.0'
+          
+      - name: Set AKS Context # uses az aks get-credentials internally.
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+
+      - name: deploy flask-app to k8s
+        run: |
+          set -ex
+          ls
+          kubectl apply -f ./k8s-config
+
+      
 
 
 

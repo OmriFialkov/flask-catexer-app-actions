@@ -3,7 +3,15 @@
 # Configure the Azure provider
 provider "azurerm" {
   features {}
-  subscription_id = "" # Replace with your subscription ID
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "docker-gifs-project"
+    key            = "omri-azure-tfstate/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+  }
 }
 
 # Define the AKS cluster
