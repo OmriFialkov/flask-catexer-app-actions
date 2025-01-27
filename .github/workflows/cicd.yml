@@ -121,8 +121,9 @@ jobs:
       - name: deploy flask-app to k8s
         run: |
           set -ex
-          ls
           kubectl apply -f ./k8s-config
+          kubectl patch deployment flask-app-deployment \
+            -p '{"spec":{"template":{"spec":{"containers":[{"name":"flask-app","image":"crazyguy888/catexer-actions:0.0.${{ github.run_number }}"}]}}}}'
 
       
 
