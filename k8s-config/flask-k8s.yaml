@@ -5,7 +5,7 @@ metadata:
   labels:
     app: flask-app
 spec:
-  replicas: 6
+  replicas: 4
   selector:
     matchLabels:
       app: flask-app
