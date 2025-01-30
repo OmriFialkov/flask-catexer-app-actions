@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: {{ .Values.flaskApp.image }}
+        image: {{ .Values.flaskApp.image }}:{{ .Values.flaskApp.tag }}
         imagePullPolicy: Always
         resources:
           requests:

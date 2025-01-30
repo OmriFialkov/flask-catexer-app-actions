@@ -12,6 +12,10 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: crazyguy888/catexer-actions
+  IMAGE_TAG: 0.0.${{ github.run_number }}
+
 jobs:
   build-Test:
     runs-on: ubuntu-latest
@@ -92,7 +96,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: azure login # to run kubectl in runner
+      - name: azure login # to run helm in runner
         run: |
           set -ex
           az login --service-principal \
@@ -114,10 +118,16 @@ jobs:
           cd azure-k8s-v2
           terraform apply -auto-approve
 
-      - name: setup kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'v1.31.0'
+      - name: Install Helm
+        run: |
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            helm version
+
+      - name: Add and Update Helm Repository
+        run: |
+            helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
+            helm repo update
+            helm search repo flaskrepo --versions
           
       - name: Set AKS Context # uses az aks get-credentials internally.
         uses: azure/aks-set-context@v3
@@ -125,13 +135,15 @@ jobs:
           resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
 
-      - name: deploy flask-app to k8s
+      - name: Deploy Flask App Using Helm, Updating Release and App-Image.
         run: |
           set -ex
-          kubectl apply -f ./k8s-config
-          kubectl patch deployment flask-app-deployment \
-            -p '{"spec":{"template":{"spec":{"containers":[{"name":"flask-app","image":"crazyguy888/catexer-actions:0.0.${{ github.run_number }}"}]}}}}'
+          helm upgrade --install release flaskrepo/helm-flask \
+            --namespace default \
+            --set flaskApp.tag=0.0.${{ github.run_number }}
 
+# --set flag overrides default value in values.yaml which is
+# passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
 
 
 
