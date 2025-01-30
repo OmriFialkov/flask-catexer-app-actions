@@ -29,6 +29,7 @@ jobs:
               run: |
                 cd charts/helm-flask
                 sed -i "s/version: .*/version: 0.0.${{ github.run_number }}/g" ./Chart.yaml
+                echo "# this file was modified by a ci to update helm version tagging" >> ./Chart.yaml
 
             - name: Package Helm Chart
               run: |
