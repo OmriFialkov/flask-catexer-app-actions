@@ -141,10 +141,11 @@ jobs:
           helm upgrade --install release flaskrepo/helm-flask \
             --namespace default \
             --set flaskApp.tag=0.0.${{ github.run_number }}
+          helm list
 
 # --set flag overrides default value in values.yaml which is
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
-
+# when naming workflow yaml with _ it resets ots workflow run number to 1.
 
 
 
