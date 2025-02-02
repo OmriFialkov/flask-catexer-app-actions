@@ -10,15 +10,17 @@
       div.container {
         max-width: 500px;
         margin: 100px auto;
-        border: 15px solid rgb(245, 180, 150); /* Softer inner border */
+        /* Removed outer border */
         padding: 10px;
         text-align: center;
       }
       h4 {
         text-transform: uppercase;
+        font-weight: 900; /* Very bold */
+        font-size: 1.25em; /* Slightly bigger */
       }
       img{
-        width: 70%; /* Increased image size */
+        width: 70%;
         height: auto;
         margin: 20px auto;
         display: block;
@@ -26,11 +28,15 @@
         border-radius: 20px;
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
       }
+      p {
+        font-weight: 900; /* Very bold */
+        font-size: 1.1em; /* Slightly bigger */
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h4>dog ( god ) image of the GET (day) - using helm, thanks to Roni!</h4>
+      <h4>dog ( god ) image of the GET (day) - using Helm, cool!</h4>
       {% if url %}
         <img src="{{ url }}" />
       {% else %}

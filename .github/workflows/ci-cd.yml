@@ -31,8 +31,6 @@ jobs:
       
       - name: Set Environment Variables # GITHUB_ENV - just to access them quicker in current job by name only.
         run: |
-            echo "IMAGE_NAME=crazyguy888/catexer-actions" >> $GITHUB_ENV
-            echo "IMAGE_TAG=0.0.${{ github.run_number }}" >> $GITHUB_ENV
             echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> $GITHUB_ENV
             echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> $GITHUB_ENV
             echo "MYSQL_USER=${{ vars.MYSQL_USER }}" >> $GITHUB_ENV
@@ -52,9 +50,6 @@ jobs:
             ls
             docker compose build --no-cache
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-        env:
-            IMAGE_NAME: ${{ env.IMAGE_NAME }}
-            IMAGE_TAG: ${{ env.IMAGE_TAG }}
   
       - name: Push Docker Image
         run: |
@@ -63,7 +58,7 @@ jobs:
             docker push ${IMAGE_NAME}:latest
 
       - name: Test - Running Project
-        run: | # running without pulling because it is already built.
+        run: | # running without pulling flask because it is already built.
             ls
             docker images
             docker compose up -d
@@ -77,7 +72,7 @@ jobs:
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
 
-  deploy: # using helm cd here.
+  deploy: # using helm cd here, 2/2/2025
     runs-on: ubuntu-latest
     needs: build-Test
     steps:
@@ -135,17 +130,20 @@ jobs:
           resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
           cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
 
-      - name: Deploy Flask App Using Helm, Updating Release and App-Image.
+      - name: Deploy Flask App Using Helm, Updating Release and App-Image (--set flag)
         run: |
           set -ex
+          echo "IMAGE_TAG=${IMAGE_TAG}"
           helm upgrade --install release flaskrepo/helm-flask \
             --namespace default \
-            --set flaskApp.tag=0.0.${{ github.run_number }}
+            --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
+# --no-build in production environment. 
+# ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
 # --set flag overrides default value in values.yaml which is
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
-# when naming workflow yaml with _ it resets ots workflow run number to 1.
+# when naming workflow yaml with _ it resets its workflow run number to 1.
 
 
 
