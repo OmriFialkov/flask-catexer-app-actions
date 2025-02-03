@@ -72,7 +72,7 @@ jobs:
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
 
-  deploy: # using helm cd here, 2/2/2025
+  deploy: # using helm cd here, 3/2/2025, google cloud k8s with terraform and helm.
     runs-on: ubuntu-latest
     needs: build-Test
     steps:
@@ -91,26 +91,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: azure login # to run helm in runner
-        run: |
-          set -ex
-          az login --service-principal \
-              --username ${{ secrets.AZURE_CLIENT_ID }}  \
-              --password ${{ secrets.AZURE_CLIENT_SECRET }} \
-              --tenant ${{ secrets.AZURE_TENANT_ID }}
+      - name: Setup google cloud service account credentials
+        run: | 
+          echo '${{ secrets.GCP_SA_KEY }}' | base64 --decode > /tmp/key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json" >> $GITHUB_ENV
 
-      - name: Terraform Init
-        env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Install gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: verify gcloud login
         run: |
-          cd azure-k8s-v2
+          set -x
+          gcloud auth list
+          
+      - name: Terraform Init
+        run: |
+          cd google-k8s
           terraform init
 
       - name: Terraform Apply # update cluster infrastructure.
-        env:
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-          cd azure-k8s-v2
+          cd google-k8s
           terraform apply -auto-approve
 
       - name: Install Helm
@@ -123,12 +124,17 @@ jobs:
             helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
             helm repo update
             helm search repo flaskrepo --versions
+
+      - name: install GKE google plugin # plugin to connect to gke cluster
+        run: |
+            gcloud components install gke-gcloud-auth-plugin
           
-      - name: Set AKS Context # uses az aks get-credentials internally.
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+      - name: Set GKE Context to connect to cluster
+        run: |
+            gcloud container clusters get-credentials \
+              ${{ secrets.GCP_CLUSTER_NAME }} \
+              --project ${{ secrets.GCP_PROJECT_ID }} \
+              --zone ${{ secrets.GCP_ZONE }}
 
       - name: Deploy Flask App Using Helm, Updating Release and App-Image (--set flag)
         run: |
@@ -144,6 +150,99 @@ jobs:
 # --set flag overrides default value in values.yaml which is
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
 # when naming workflow yaml with _ it resets its workflow run number to 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# deploy: # using helm cd here, 2/2/2025, azure-k8s-v2 azure ci cd with terraform deploy k8s helm.
+#     runs-on: ubuntu-latest
+#     needs: build-Test
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: setup Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with: 
+#           terraform_wrapper: false 
+
+#       - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: azure login # to run helm in runner
+#         run: |
+#           set -ex
+#           az login --service-principal \
+#               --username ${{ secrets.AZURE_CLIENT_ID }}  \
+#               --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+#               --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+#       - name: Terraform Init
+#         env:
+#           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#         run: |
+#           cd azure-k8s-v2
+#           terraform init
+
+#       - name: Terraform Apply # update cluster infrastructure.
+#         env:
+#           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#         run: |
+#           cd azure-k8s-v2
+#           terraform apply -auto-approve
+
+#       - name: Install Helm
+#         run: |
+#             curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+#             helm version
+
+#       - name: Add and Update Helm Repository
+#         run: |
+#             helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
+#             helm repo update
+#             helm search repo flaskrepo --versions
+          
+#       - name: Set AKS Context # uses az aks get-credentials internally.
+#         uses: azure/aks-set-context@v3
+#         with:
+#           resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
+#           cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+
+#       - name: Deploy Flask App Using Helm, Updating Release and App-Image (--set flag)
+#         run: |
+#           set -ex
+#           echo "IMAGE_TAG=${IMAGE_TAG}"
+#           helm upgrade --install release flaskrepo/helm-flask \
+#             --namespace default \
+#             --set flaskApp.tag=${IMAGE_TAG}
+#           helm list
+
+
+
+
+
+
+
 
 
 

@@ -1,4 +1,5 @@
 # exer 7 v2 deploy with azure k8s terraform k8s infrastructure, 27/1.
+# using helm cd here, 2/2/2025, azure-k8s-v2 azure ci cd with terraform deploy k8s helm.
 
 # Configure the Azure provider
 provider "azurerm" {
