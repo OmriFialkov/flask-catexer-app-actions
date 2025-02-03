@@ -20,11 +20,11 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: "90Mi"
-            cpu: "50m"
+            memory: "{{ .Values.flaskApp.resources.requests.memory }}"
+            cpu: "{{ .Values.flaskApp.resources.requests.cpu }}"
           limits:
-            memory: "130Mi"
-            cpu: "100m"
+            memory: "{{ .Values.flaskApp.resources.limits.memory }}"
+            cpu: "{{ .Values.flaskApp.resources.limits.cpu }}"
         ports:
         - containerPort: {{ .Values.flaskApp.port }}
         env:

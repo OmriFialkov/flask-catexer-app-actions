@@ -9,6 +9,13 @@ flaskApp:
   mysqlUser: user
   mysqlDatabase: flaskdb
   mysqlPasswordSecretKey: MYSQL_PASSWORD
+  resources:
+    requests:
+      memory: "90Mi"
+      cpu: "50m"
+    limits:
+      memory: "130Mi"
+      cpu: "100m"
 
 mysql:
   image: mysql:5.7
