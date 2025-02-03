@@ -99,6 +99,10 @@ jobs:
       - name: Install gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
 
+      - name: login to gcloud
+        run: |
+          gcloud auth activate-service-account --key-file=/tmp/key.json
+
       - name: verify gcloud login
         run: |
           set -x
@@ -128,6 +132,10 @@ jobs:
       - name: install GKE google plugin # plugin to connect to gke cluster
         run: |
             gcloud components install gke-gcloud-auth-plugin
+
+      - name: List GKE Clusters (Debug)
+        run: |
+            gcloud container clusters list --project ${{ secrets.GCP_PROJECT_ID }}
           
       - name: Set GKE Context to connect to cluster
         run: |
