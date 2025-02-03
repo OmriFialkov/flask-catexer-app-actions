@@ -153,7 +153,7 @@ jobs:
             --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
-# --no-build in production environment.
+# --no-build in production environment
 # ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
 # --set flag overrides default value in values.yaml which is
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
