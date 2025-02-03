@@ -11,11 +11,11 @@ flaskApp:
   mysqlPasswordSecretKey: MYSQL_PASSWORD
   resources:
     requests:
-      memory: "90Mi"
-      cpu: "50m"
+      memory: "85Mi"
+      cpu: "15m"
     limits:
-      memory: "130Mi"
-      cpu: "100m"
+      memory: "115Mi"
+      cpu: "80m"
 
 mysql:
   image: mysql:5.7
