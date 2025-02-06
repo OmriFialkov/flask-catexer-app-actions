@@ -1,4 +1,4 @@
-replicaCount: 6
+replicaCount: 2
 
 flaskApp:
   image: crazyguy888/catexer-actions
@@ -25,10 +25,10 @@ mysql:
   resources:
     requests:
       memory: "200Mi"
-      cpu: "6m"
+      cpu: "25m"
     limits:
       memory: "400Mi"
-      cpu: "35m"
+      cpu: "55m"
 
 initSqlConfigMapName: init-sql-configmap
 
