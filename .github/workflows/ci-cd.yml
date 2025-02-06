@@ -159,6 +159,7 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: |
+          chmod +x ./docker-clean.sh
           ./docker-clean.sh
 
 # --no-build in production environment

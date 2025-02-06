@@ -17,6 +17,14 @@ spec:
       containers:
       - name: mysql
         image: {{ .Values.mysql.image }}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "{{ .Values.mysql.resources.requests.memory }}"
+            cpu: "{{ .Values.mysql.resources.requests.cpu }}"
+          limits:
+            memory: "{{ .Values.mysql.resources.limits.memory }}"
+            cpu: "{{ .Values.mysql.resources.limits.cpu }}"
         ports:
         - containerPort: {{ .Values.mysql.port }}
         env:

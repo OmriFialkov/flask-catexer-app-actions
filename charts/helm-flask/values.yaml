@@ -11,17 +11,24 @@ flaskApp:
   mysqlPasswordSecretKey: MYSQL_PASSWORD
   resources:
     requests:
-      memory: "65Mi"
-      cpu: "8m"
+      memory: "50Mi"
+      cpu: "6m"
     limits:
-      memory: "115Mi"
-      cpu: "50m"
+      memory: "90Mi"
+      cpu: "35m"
 
 mysql:
   image: mysql:5.7
   port: 3306
   rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
   replicas: 1
+  resources:
+    requests:
+      memory: "200Mi"
+      cpu: "6m"
+    limits:
+      memory: "400Mi"
+      cpu: "35m"
 
 initSqlConfigMapName: init-sql-configmap
 
