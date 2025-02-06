@@ -153,6 +153,14 @@ jobs:
             --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
+      - name: cleaning up docker hub older tags
+        env:
+          DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: |
+          ./docker-clean.sh
+
 # --no-build in production environment
 # ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
 # --set flag overrides default value in values.yaml which is
