@@ -22,13 +22,6 @@ mysql:
   port: 3306
   rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
   replicas: 1
-  resources:
-    requests:
-      memory: "200Mi"
-      cpu: "25m"
-    limits:
-      memory: "400Mi"
-      cpu: "55m"
 
 initSqlConfigMapName: init-sql-configmap
 
