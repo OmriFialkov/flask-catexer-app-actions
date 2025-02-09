@@ -153,6 +153,18 @@ jobs:
             --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
+      - name: Verify Monitoring Is Up & Running # add -q for grep
+        run: |
+          set -x
+          if kubectl get pods -n monitor | grep -i grafana; then
+            echo "monitor stack is up & running."
+          else
+            helm install my-monitoring prometheus-community/kube-prometheus-stack \
+              -n monitor
+          fi
+
+          curl -f http://localhost:${{ env.PORT }}
+
       - name: cleaning up docker hub older tags
         env:
           DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
