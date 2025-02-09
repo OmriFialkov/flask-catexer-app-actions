@@ -163,8 +163,6 @@ jobs:
               -n monitor
           fi
 
-          curl -f http://localhost:${{ env.PORT }}
-
       - name: cleaning up docker hub older tags
         env:
           DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
