@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flask-app-monitor
+  namespace: monitor  # The namespace where Prometheus is installed
+spec:
+  selector:
+    matchLabels:
+      app: flask-app  # This should match the service label of your Flask app
+  endpoints:
+    - port: http  # Ensure this matches the port name you defined in your service (or use 80 if no name is defined)
+      path: /metrics  # The Flask metrics endpoint
+      interval: 15s  # Scrape every 15 seconds (adjust as needed)
+  namespaceSelector:
+    matchNames:
+      - default  # The namespace where your Flask app is deployed - updated now.

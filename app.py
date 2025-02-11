@@ -3,6 +3,7 @@ import os
 import random
 import pymysql
 from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_flask_exporter import PrometheusMetrics
 
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ def get_db_connection():
         database=os.getenv("MYSQL_DATABASE")
     )
 
+metrics = PrometheusMetrics(app)
 visitor_count_gauge = Gauge('flask_app_visitor_count', 'Current number of visitors')
 @app.route("/")
 def index():
