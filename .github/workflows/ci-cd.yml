@@ -178,7 +178,9 @@ jobs:
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
 # when naming workflow yaml with _ it resets its workflow run number to 1.
 
-
+# ci cd to both new helm charts
+# prometheus repo auto service monitor 
+# loki repo version downgrade
 
 
 
