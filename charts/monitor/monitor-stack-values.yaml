@@ -2,6 +2,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# Modified - 
+# 3934 - nil false - shows service monitors from external yamls.
+# 1216 - finds dashboard
+# 1294 - loki datasource
+# 1132 - time zone
+# service monitor and dashboards are outside of this file.
+
 ## Provide a name in place of kube-prometheus-stack for `app:` labels
 ##
 nameOverride: ""
@@ -1129,6 +1136,9 @@ alertmanager:
 grafana:
   enabled: true
   namespaceOverride: ""
+  grafana.ini:
+    date_format:
+      default_timezone: "browser"
 
   ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled
   ##
@@ -1291,7 +1301,15 @@ grafana:
 
   ## Configure additional grafana datasources (passed through tpl)
   ## ref: http://docs.grafana.org/administration/provisioning/#datasources
-  additionalDataSources: []
+  additionalDataSources:
+    - name: loki-auto
+      type: loki
+      access: proxy
+      uid: loki-omri
+      url: http://loki.log.svc.cluster.local:3100
+      isDefault: false
+      jsonData:
+        maxLines: 1000
   # - name: prometheus-sample
   #   access: proxy
   #   basicAuth: true

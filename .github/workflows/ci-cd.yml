@@ -144,7 +144,7 @@ jobs:
               --project ${{ secrets.GCP_PROJECT_ID }} \
               --zone ${{ secrets.GCP_ZONE }}
 
-      - name: Deploy Flask App Using Helm, Updating Release and App-Image (--set flag)
+      - name: Deploy Flask App Using Helm # Updating Release and App-Image (--set flag)
         run: |
           set -ex
           echo "IMAGE_TAG=${IMAGE_TAG}"
@@ -153,24 +153,62 @@ jobs:
             --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
-      - name: Verify Monitoring Is Up & Running # add -q for grep
+      - name: Verify Monitoring & Logging Are Up & Running # add -q for grep
         run: |
           set -x
-          if kubectl get pods -n monitor | grep -i grafana; then
-            echo "monitor stack is up & running."
+          pwd
+
+          if helm list -n monitor | grep -qi my-monitoring; then
+            echo "monitor stack release exists, checking it is up & running."
+
+            if helm status my-monitoring -n monitor | grep -iq "STATUS: deployed" && \
+             kubectl get pods -n monitor | grep -iq grafana; then
+             echo "monitor stack is up & running, now checking logging stack.."
+            else
+              echo "monitor stack isnt running - check manually"
+            fi
+
           else
+            cd charts/monitor/
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
             helm install my-monitoring prometheus-community/kube-prometheus-stack \
-              -n monitor
+              -n monitor -f monitor-stack-values.yaml
+            kubectl apply -f monitor-additional-resources.yaml
           fi
 
-      - name: cleaning up docker hub older tags
-        env:
-          DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-        run: |
-          chmod +x ./docker-clean.sh
-          ./docker-clean.sh
+
+          if helm list -n log | grep -iq loki; then
+            echo "loki stack release exists, checking it is up & running."
+
+            if helm status loki -n log | grep -iq "STATUS: deployed" && \
+             kubectl get svc -n log | grep -qi loki; then
+             echo "loki stack is up & running"
+            else
+              echo "loki stack isnt running - check manually"
+            fi
+
+          else
+            cd ..
+            cd logging/
+            helm repo add grafana https://grafana.github.io/helm-charts
+            helm install loki grafana/loki-stack \
+              --set grafana.enabled=false --set promtail.enabled=true \
+              --set loki.image.tag=2.9.3 -n log -f loki-values.yaml
+          fi
+
+      # - name: cleaning up docker hub older tags
+      #   env:
+      #     DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
+      #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      #     DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      #   run: |
+      #     chmod +x ./docker-clean.sh
+      #     ./docker-clean.sh
+
+
+
+# NOTES:
+#____________________________________________________________________________________________________
 
 # --no-build in production environment
 # ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
@@ -181,6 +219,8 @@ jobs:
 # ci cd to both new helm charts
 # prometheus repo auto service monitor 
 # loki repo version downgrade
+# loki dashboard yaml and service monitor yaml is manual.
+# check step here of monitoring and logging.cancel-timeout-minutes.
 
 
 

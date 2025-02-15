@@ -4,11 +4,17 @@ on:
     push:
       paths:
         - 'charts/**'
+      paths-ignore:
+        - 'charts/logging/**'
+        - 'charts/monitor/**'
       branches:
         - main
     pull_request:
       paths:
         - 'charts/**'
+      paths-ignore:
+        - 'charts/logging/**'
+        - 'charts/monitor/**'
       branches:
         - main
 
