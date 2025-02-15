@@ -3,18 +3,12 @@ name: helm ci
 on:
     push:
       paths:
-        - 'charts/**'
-      paths-ignore:
-        - 'charts/logging/**'
-        - 'charts/monitor/**'
+        - 'charts/helm-flask/**'
       branches:
         - main
     pull_request:
       paths:
-        - 'charts/**'
-      paths-ignore:
-        - 'charts/logging/**'
-        - 'charts/monitor/**'
+        - 'charts/helm-flask/**'
       branches:
         - main
 
