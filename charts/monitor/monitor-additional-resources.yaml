@@ -1,5 +1,5 @@
 # this yaml will add 2 custom dashboards for monitoring and logging the flask app in the installed grafana,
-# including a visior-count custom metric.
+# including a visitor count custom metric!
 apiVersion: v1
 kind: ConfigMap
 metadata:
