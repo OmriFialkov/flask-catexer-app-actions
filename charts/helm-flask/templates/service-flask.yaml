@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: flask-app-service
   labels:
-    app: flask-app
+    app: flask-app # for service monitor discovery.
 spec:
   type: LoadBalancer
   selector:
