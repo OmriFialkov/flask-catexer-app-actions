@@ -153,10 +153,12 @@ jobs:
             --set flaskApp.tag=${IMAGE_TAG}
           helm list
 
-      - name: Verify Monitoring & Logging Are Up & Running # add -q for grep
+      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode.
         run: |
           set -x
+          
           pwd
+          echo "$GITHUB_WORKSPACE"
 
           if helm list -n monitor | grep -qi my-monitoring; then
             echo "monitor stack release exists, checking it is up & running."
@@ -165,7 +167,13 @@ jobs:
              kubectl get pods -n monitor | grep -iq grafana; then
              echo "monitor stack is up & running, now checking logging stack.."
             else
-              echo "monitor stack isnt running - check manually"
+              echo "release might be broken - reinstalling monitor stack from scratch.."
+              cd charts/monitor/
+              helm uninstall my-monitoring -n monitor
+              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+              helm install my-monitoring prometheus-community/kube-prometheus-stack \
+                -n monitor -f monitor-stack-values.yaml
+              kubectl apply -f monitor-additional-resources.yaml
             fi
 
           else
@@ -176,6 +184,11 @@ jobs:
             kubectl apply -f monitor-additional-resources.yaml
           fi
 
+          echo "monitor stack is ok.."
+
+      - name: Verify Logging Stack Is Up & Running
+        run: |
+          set -x
 
           if helm list -n log | grep -iq loki; then
             echo "loki stack release exists, checking it is up & running."
@@ -184,45 +197,57 @@ jobs:
              kubectl get svc -n log | grep -qi loki; then
              echo "loki stack is up & running"
             else
-              echo "loki stack isnt running - check manually"
+              echo "release might be broken - reinstalling loki-stack from scratch.."
+              cd charts/logging/
+              helm uninstall loki -n log
+              helm repo add grafana https://grafana.github.io/helm-charts
+              helm install loki grafana/loki-stack \
+                --set grafana.enabled=false --set promtail.enabled=true \
+                --set loki.image.tag=2.9.3 -n log -f loki-values.yaml 
             fi
 
           else
-            cd ..
-            cd logging/
+            cd charts/logging/
             helm repo add grafana https://grafana.github.io/helm-charts
             helm install loki grafana/loki-stack \
               --set grafana.enabled=false --set promtail.enabled=true \
               --set loki.image.tag=2.9.3 -n log -f loki-values.yaml
           fi
 
-      # - name: cleaning up docker hub older tags
-      #   env:
-      #     DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
-      #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      #     DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-      #   run: |
-      #     chmod +x ./docker-clean.sh
-      #     ./docker-clean.sh
+          echo "loki stack is ok.."
+
+      - name: cleaning up docker hub older tags
+        env:
+          DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: |
+          chmod +x ./docker-clean.sh
+          ./docker-clean.sh
 
 
 
 # NOTES:
 #____________________________________________________________________________________________________
 
+# after monitoring and logging - bonuses from here.
 # --no-build in production environment
 # ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
 # --set flag overrides default value in values.yaml which is
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime.
 # when naming workflow yaml with _ it resets its workflow run number to 1.
-
-# ci cd to both new helm charts
-# prometheus repo auto service monitor 
-# loki repo version downgrade
-# loki dashboard yaml and service monitor yaml is manual.
-# check step here of monitoring and logging.cancel-timeout-minutes.
+# with 3 helm charts - monitor, logging and flask app.
+# dashboards and service monitors are manual - not in values.yaml.
 
 
+
+# FAR FUTURE:
+# ____________________________________________________________________________________________________
+
+# maybe helm chart umbrella to connect kube-prometheus-stack with additional dashboards and
+# service monitors, followed by helm entirely.
+
+# service monitors and dashboards - auto in values.yaml - check if i can.
 
 
 
