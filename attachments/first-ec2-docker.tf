@@ -1,3 +1,5 @@
+# a terraform that provisions ec2 with my project using docker compose, got image tag from an old cd,
+# that ran terraform apply -auto-approve to this file.
 provider "aws" {
   region = "us-east-1" # Change to your preferred region, 6, 25/1 deploy.
 }

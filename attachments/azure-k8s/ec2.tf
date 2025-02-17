@@ -1,3 +1,4 @@
+# provisions ec2 that connects to the azure cluster and applies k8s yamls of my project.
 provider "aws" {
   region = "us-east-1" # Change to your preferred region, 7 v1, deploy could be commented-out, 26/1 deploy.
 }
