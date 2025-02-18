@@ -45,6 +45,7 @@ jobs:
               with:
                 name: image_tag
                 run-id: ${{ github.event.workflow_run.id }}
+                github-token: ${{ secrets.HELM_REPO_PAT }}
               
 
             - name: Update Image Tag in values.yaml - Only If Triggered By App CI
