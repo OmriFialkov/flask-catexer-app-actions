@@ -84,7 +84,7 @@ jobs:
           set -ex
           echo "IMAGE_TAG=${IMAGE_TAG}"
           helm upgrade --install release flaskrepo/helm-flask \
-            --namespace default \
+            --namespace default
           helm list
 
       - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode.
