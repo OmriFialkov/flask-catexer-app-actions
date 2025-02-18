@@ -1,18 +1,16 @@
-name: CI/CD with helm cd
+name: app ci
 
 on:
   push:
     paths-ignore:
       - 'charts/**'
       - 'README.md'
-      - '*ignore'
     branches:
       - main
   pull_request:
     paths-ignore:
       - 'charts/**'
       - 'README.md'
-      - '*ignore'
     branches:
       - main
 
@@ -43,10 +41,18 @@ jobs:
             echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
             echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
       
-      - name: Debug Environment Variables
+      - name: Debug Environment Variables & Upload to Artifact
         run: |
               echo "IMAGE_NAME=${IMAGE_NAME}"
               echo "IMAGE_TAG=${IMAGE_TAG}"
+              echo "${IMAGE_TAG}" > image_tag.txt
+              cat image_tag.txt
+
+      - name: Upload IMAGE_TAG Variable to Artifact for Helm CI
+        uses: actions/upload-artifact@v3
+        with:
+          name: image_tag
+          path: image_tag.txt
 
       - name: Build Docker Compose Image
         run: |
@@ -75,161 +81,9 @@ jobs:
             docker compose logs
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
+            echo "tests passed.."
 
-  deploy: # using helm cd here, 3/2/2025, google cloud k8s with terraform and helm.
-    runs-on: ubuntu-latest
-    needs: build-Test
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with: 
-          terraform_wrapper: false 
-
-      - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Setup google cloud service account credentials # env configuring for terraform commands.
-        run: | 
-          echo '${{ secrets.GCP_SA_KEY }}' | base64 --decode > /tmp/key.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json" >> $GITHUB_ENV
-
-      - name: Install gcloud CLI # for cli commands
-        uses: google-github-actions/setup-gcloud@v1
-
-      - name: login to gcloud # using service account as a credential to login to gcloud cli.
-        run: |
-          gcloud auth activate-service-account --key-file=/tmp/key.json
-
-      - name: verify gcloud login # debug.
-        run: |
-          set -x
-          gcloud auth list
-          
-      - name: Terraform Init
-        run: |
-          cd google-k8s
-          terraform init
-
-      - name: Terraform Apply # update cluster infrastructure.
-        run: |
-          cd google-k8s
-          terraform apply -auto-approve
-
-      - name: Install Helm
-        run: |
-            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-            helm version
-
-      - name: Add and Update Helm Repository
-        run: |
-            helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
-            helm repo update
-            helm search repo flaskrepo --versions
-
-      - name: install GKE google plugin # a must install google plugin to connect to gke cluster
-        run: |
-            gcloud components install gke-gcloud-auth-plugin
-
-      - name: List GKE Clusters # debug.
-        run: |
-            gcloud container clusters list --project ${{ secrets.GCP_PROJECT_ID }}
-          
-      - name: Set GKE Context to connect to cluster # runner is connecting to cluster.
-        run: |
-            gcloud container clusters get-credentials \
-              ${{ secrets.GCP_CLUSTER_NAME }} \
-              --project ${{ secrets.GCP_PROJECT_ID }} \
-              --zone ${{ secrets.GCP_ZONE }}
-
-      - name: Deploy Flask App Using Helm # Updating Release and App-Image (--set flag)
-        run: |
-          set -ex
-          echo "IMAGE_TAG=${IMAGE_TAG}"
-          helm upgrade --install release flaskrepo/helm-flask \
-            --namespace default \
-            --set flaskApp.tag=${IMAGE_TAG}
-          helm list
-
-      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode.
-        run: |
-          set -x
-          
-          pwd
-          echo "$GITHUB_WORKSPACE"
-
-          if helm list -n monitor | grep -qi my-monitoring; then
-            echo "monitor stack release exists, checking it is up & running."
-
-            if helm status my-monitoring -n monitor | grep -iq "STATUS: deployed" && \
-             kubectl get pods -n monitor | grep -iq grafana; then
-             echo "monitor stack is up & running, now checking logging stack.."
-            else
-              echo "release might be broken - reinstalling monitor stack from scratch.."
-              cd charts/monitor/
-              helm uninstall my-monitoring -n monitor
-              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-              helm install my-monitoring prometheus-community/kube-prometheus-stack \
-                -n monitor -f monitor-stack-values.yaml
-              kubectl apply -f monitor-additional-resources.yaml
-            fi
-
-          else
-            cd charts/monitor/
-            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-            helm install my-monitoring prometheus-community/kube-prometheus-stack \
-              -n monitor -f monitor-stack-values.yaml
-            kubectl apply -f monitor-additional-resources.yaml
-          fi
-
-          echo "monitor stack is ok.."
-
-      - name: Verify Logging Stack Is Up & Running
-        run: |
-          set -x
-
-          if helm list -n log | grep -iq loki; then
-            echo "loki stack release exists, checking it is up & running."
-
-            if helm status loki -n log | grep -iq "STATUS: deployed" && \
-             kubectl get svc -n log | grep -qi loki; then
-             echo "loki stack is up & running"
-            else
-              echo "release might be broken - reinstalling loki-stack from scratch.."
-              cd charts/logging/
-              helm uninstall loki -n log
-              helm repo add grafana https://grafana.github.io/helm-charts
-              helm install loki grafana/loki-stack \
-                --set grafana.enabled=false --set promtail.enabled=true \
-                --set loki.image.tag=2.9.3 -n log -f loki-values.yaml 
-            fi
-
-          else
-            cd charts/logging/
-            helm repo add grafana https://grafana.github.io/helm-charts
-            helm install loki grafana/loki-stack \
-              --set grafana.enabled=false --set promtail.enabled=true \
-              --set loki.image.tag=2.9.3 -n log -f loki-values.yaml
-          fi
-
-          echo "loki stack is ok.."
-
-      - name: cleaning up docker hub older tags
-        env:
-          DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-        run: |
-          chmod +x ./docker-clean.sh
-          ./docker-clean.sh
-
-
+# another tests?
 
 # NOTES:
 #____________________________________________________________________________________________________
@@ -243,6 +97,13 @@ jobs:
 # with 3 helm charts - monitor, logging and flask app.
 # dashboards and service monitors are manual - not in values.yaml.
 
+# TO DO:
+# ____________________________________________________________________________________________________
+
+# HELM CHART BUILD HERE AND NOT IN ANOTHER CI
+# MONITOR AND LOGGING WITH HELM UPGRADE --INSTALL - WONT DO NOTHING MOST OF
+# THE TIME JUST IN CASE WE UPGRADE THE VALUES.YAML OF THE CHART - WILL IT GO UP A REVISION?
+# chart umbrella additional resorces.
 
 
 # FAR FUTURE:

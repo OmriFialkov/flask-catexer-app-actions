@@ -11,6 +11,10 @@ on:
         - 'charts/helm-flask/**'
       branches:
         - main
+    workflow_run:
+      workflows: ["app ci"]
+      types:
+        - completed
 
 jobs:
     helm-chart-update:
@@ -30,6 +34,24 @@ jobs:
                 cd charts/helm-flask
                 sed -i "s/version: .*/version: 0.0.${{ github.run_number }}/g" ./Chart.yaml
                 echo "# this file was modified by a ci to update helm version tagging" >> ./Chart.yaml
+
+            - name: Download Image Tag Artifact from App CI - Only If Triggered By App CI
+              if: ${{ github.event.workflow_run.workflow == 'app ci' }}
+              uses: actions/download-artifact@v3
+              with:
+                name: image_tag
+              
+
+            - name: Update Image Tag in values.yaml - Only If Triggered By App CI
+              if: ${{ github.event.workflow_run.workflow == 'app ci' }}
+              run: |
+                echo "this flow was triggered by app ci, needs to update image tag in values.yaml"
+                ls -lrta
+                IMAGE_TAG=$(cat image_tag.txt)
+                echo "updating image tag in values.yaml to ${IMAGE_TAG}"
+                cd charts/helm-flask
+                sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
+                cat ./values.yaml
 
             - name: Package Helm Chart
               run: |
