@@ -44,12 +44,13 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: image_tag
+                run_id: ${{ github.event.workflow_run.id }}
               
 
             - name: Update Image Tag in values.yaml - Only If Triggered By App CI
               if: ${{ github.event.workflow_run.name == 'app ci' }}
               run: |
-                echo "this flow was triggered by app ci, needs to update image tag in values.yaml"
+                set -x
                 ls -lrta
                 IMAGE_TAG=$(cat image_tag.txt)
                 echo "updating image tag in values.yaml to ${IMAGE_TAG}"
