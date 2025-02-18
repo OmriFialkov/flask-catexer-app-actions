@@ -79,12 +79,11 @@ jobs:
               --project ${{ secrets.GCP_PROJECT_ID }} \
               --zone ${{ secrets.GCP_ZONE }}
 
-      - name: Deploy Flask App Using Helm # Updating Release and App-Image (--set flag)
+      - name: Deploy Flask App Using Helm # Updating Release and App-Image (older with --set flag)
         run: |
           set -ex
           echo "IMAGE_TAG=${IMAGE_TAG}"
-          helm upgrade --install release flaskrepo/helm-flask \
-            --namespace default
+          helm upgrade --install release flaskrepo/helm-flask
           helm list
 
       - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode.
