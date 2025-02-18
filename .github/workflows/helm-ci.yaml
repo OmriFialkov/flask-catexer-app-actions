@@ -44,7 +44,7 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: image_tag
-                run_id: ${{ github.event.workflow_run.id }}
+                run-id: ${{ github.event.workflow_run.id }}
               
 
             - name: Update Image Tag in values.yaml - Only If Triggered By App CI
