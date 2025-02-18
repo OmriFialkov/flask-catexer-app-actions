@@ -9,6 +9,7 @@ on:
 jobs:
   deploy: # using helm cd here, 3/2/2025, google cloud k8s with terraform and helm.
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3

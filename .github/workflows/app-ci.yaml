@@ -49,7 +49,7 @@ jobs:
               cat image_tag.txt
 
       - name: Upload IMAGE_TAG Variable to Artifact for Helm CI
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image_tag
           path: image_tag.txt

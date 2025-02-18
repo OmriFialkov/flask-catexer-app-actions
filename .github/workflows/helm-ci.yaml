@@ -17,9 +17,9 @@ on:
         - completed
 
 jobs:
-    helm-chart-update:
+  helm-chart-update:
         runs-on: ubuntu-latest
-
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         steps:
             - name: Checkout Code
               uses: actions/checkout@v3
@@ -37,7 +37,7 @@ jobs:
 
             - name: Download Image Tag Artifact from App CI - Only If Triggered By App CI
               if: ${{ github.event.workflow_run.workflow == 'app ci' }}
-              uses: actions/download-artifact@v3
+              uses: actions/download-artifact@v4
               with:
                 name: image_tag
               
