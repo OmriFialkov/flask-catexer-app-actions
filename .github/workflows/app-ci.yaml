@@ -1,9 +1,5 @@
 name: app ci
 
-concurrency:
-  group: ci-deploy
-  cancel-in-progress: false
-
 on:
   push:
     paths-ignore:

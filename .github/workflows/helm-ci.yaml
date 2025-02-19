@@ -1,9 +1,5 @@
 name: helm ci
 
-concurrency:
-  group: ci-deploy
-  cancel-in-progress: true
-
 on:
     push:
       paths:
@@ -25,6 +21,21 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
         steps:
+            - name: verify app ci is not running simultaneously to prevent conflicts # a situation where theres a change in both charts and app.
+              run: |
+                set -x
+                sleep 2
+                RUNNING=$(curl -s -H "Authorization: token ${{ secrets.HELM_REPO_PAT }}" \
+                 "https://api.github.com/repos/OmriFialkov/flask-catexer-app-actions/actions/runs?status=in_progress" \
+                 | jq 'if .workflow_runs then [ .workflow_runs[] | select(.name == "app ci") ] | length else 0 end')
+
+                if [ "$RUNNING" -gt 0 ]; then
+                  echo "app ci is running"
+                  exit 1
+                else
+                  echo "app ci is not running, continuing.."
+                fi
+
             - name: Checkout Code
               uses: actions/checkout@v3
 
