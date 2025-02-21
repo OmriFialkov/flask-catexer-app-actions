@@ -2,14 +2,13 @@
 # Local Terraform directories
 **/.terraform/
 **/.terraform.lock.hcl
-
 # Terraform state files
 *.tfstate
 *.tfstate.backup
 *aks.json
 # Crash log files
 crash.log
-
+**/*.lock
 # Ignore override files as they are intended to be local
 *.tfvars
 *.tfvars.json
