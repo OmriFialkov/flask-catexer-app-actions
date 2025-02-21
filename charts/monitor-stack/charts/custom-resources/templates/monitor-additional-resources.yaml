@@ -1,0 +1,429 @@
+# this yaml will add 2 custom dashboards for monitoring and logging the flask app in the installed grafana,
+# including a visitor count custom metric!
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-dashboard
+  namespace: monitor
+  labels:
+    grafana_dashboard: "1" # input field removed in json format.
+data:
+  loki-dashboard.json: |
+    {
+      "__elements": {},
+      "__requires": [
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "11.5.1"
+        },
+        {
+          "type": "panel",
+          "id": "logs",
+          "name": "Logs",
+          "version": ""
+        },
+        {
+          "type": "datasource",
+          "id": "loki",
+          "name": "Loki",
+          "version": "1.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "timeseries",
+          "name": "Time series",
+          "version": ""
+        }
+      ],
+      "annotations": {
+        "list": [
+          {
+            "$$hashKey": "object:75",
+            "builtIn": 1,
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "Log Viewer Dashboard for Loki",
+      "editable": false,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [
+        {
+          "$$hashKey": "object:59",
+          "icon": "bolt",
+          "includeVars": true,
+          "keepTime": true,
+          "tags": [],
+          "targetBlank": true,
+          "title": "View In Explore",
+          "type": "link",
+          "url": "/explore?orgId=1&left=[\"now-1h\",\"now\",\"Loki\",{\"expr\":\"{job=\\\"$app\\\"}\"},{\"ui\":[true,true,true,\"none\"]}]"
+        },
+        {
+          "$$hashKey": "object:61",
+          "icon": "external link",
+          "tags": [],
+          "targetBlank": true,
+          "title": "Learn LogQL",
+          "type": "link",
+          "url": "https://grafana.com/docs/loki/latest/logql/"
+        }
+      ],
+      "panels": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-omri"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "hidden",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "bars",
+                "fillOpacity": 100,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 6,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.5.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki-omri"
+              },
+              "expr": "sum(count_over_time({job=\"$app\"} |= \"$search\" [$__interval]))",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki-omri"
+          },
+          "gridPos": {
+            "h": 25,
+            "w": 24,
+            "x": 0,
+            "y": 3
+          },
+          "id": 2,
+          "maxDataPoints": "",
+          "options": {
+            "dedupStrategy": "none",
+            "enableInfiniteScrolling": false,
+            "enableLogDetails": true,
+            "prettifyLogMessage": false,
+            "showCommonLabels": false,
+            "showLabels": false,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": false
+          },
+          "pluginVersion": "11.5.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki-omri"
+              },
+              "expr": "{job=\"$app\"} |= \"$search\" | logfmt",
+              "hide": false,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "transparent": true,
+          "type": "logs"
+        }
+      ],
+      "refresh": "",
+      "schemaVersion": 40,
+      "tags": [],
+      "templating": {
+        "list": [
+          {
+            "current": {},
+            "datasource": {
+              "type": "loki",
+              "uid": "loki-omri"
+            },
+            "definition": "label_values(job)",
+            "includeAll": false,
+            "label": "App",
+            "name": "app",
+            "options": [],
+            "query": "label_values(job)",
+            "refresh": 1,
+            "regex": "",
+            "type": "query"
+          },
+          {
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "label": "String Match",
+            "name": "search",
+            "options": [
+              {
+                "selected": true,
+                "text": "",
+                "value": ""
+              }
+            ],
+            "query": "",
+            "type": "textbox"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ]
+      },
+      "timezone": "",
+      "title": "AUTOMATED DASHBOARD CONFIGMAP - Loki",
+      "uid": "loki-apps-dashboard-omri",
+      "version": 1,
+      "weekStart": ""
+    }
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flask-dashboard-omri
+  namespace: monitor  # Ensure this matches Grafana's namespace
+  labels:
+    grafana_dashboard: "1"
+data:
+  flask-dashboard.json: |
+    {
+      "__elements": {},
+      "__requires": [
+        {
+          "type": "panel",
+          "id": "gauge",
+          "name": "Gauge",
+          "version": ""
+        },
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "11.5.1"
+        },
+        {
+          "type": "datasource",
+          "id": "prometheus",
+          "name": "Prometheus",
+          "version": "1.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "timeseries",
+          "name": "Time series",
+          "version": ""
+        }
+      ],
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "graphTooltip": 0,
+      "id": null,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "Visitor Count by Time",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "flask_app_visitor_count{service=\"flask-app-service\"}",
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 0
+            }
+          }
+        },  
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "id": 2,
+          "title": "Visitors Count",
+          "type": "gauge",
+          "targets": [
+            {
+              "expr": "avg(flask_app_visitor_count{service=\"flask-app-service\"})",
+              "refId": "B",
+              "datasource": { "type": "prometheus", "uid": "prometheus" }
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "id": 3,
+          "title": "flask total requests",
+          "type": "gauge",
+          "targets": [
+            {
+              "expr": "sum(flask_http_request_total{service=\"flask-app-service\"})",
+              "refId": "C",
+              "datasource": { "type": "prometheus", "uid": "prometheus" }
+            }
+          ]
+        }
+      ],
+      "refresh": "5m",
+      "schemaVersion": 40,
+      "tags": [],
+      "templating": { "list": [] },
+      "time": { "from": "now-30m", "to": "now" },
+      "title": "flask dashboard - AUTOMATED NOW",
+      "uid": "ced1bt9vv1yiof",
+      "version": 6
+    }
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flask-app-monitor
+  namespace: monitor  # The namespace where Prometheus is installed
+spec:
+  selector:
+    matchLabels:
+      app: flask-app  # This should match the service label of your Flask app
+  endpoints:
+    - port: http  # Ensure this matches the port name you defined in your service (or use 80 if no name is defined)
+      path: /metrics  # The Flask metrics endpoint
+      interval: 15s  # Scrape every 15 seconds (adjust as needed)
+  namespaceSelector:
+    matchNames:
+      - default  # The namespace where your Flask app is deployed - updated now.

@@ -60,6 +60,7 @@ jobs:
 
       - name: Add and Update Helm Repository
         run: |
+            echo "$GITHUB_WORKSPACE"
             helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
             helm repo update
             helm search repo flaskrepo --versions
@@ -86,68 +87,91 @@ jobs:
           helm upgrade --install release flaskrepo/helm-flask
           helm list
 
-      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode.
-        run: |
+      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode, upgrade can be from values.yaml or published chart itself.
+        run: | # helm list in the end to make sure whether upgrade took place or not - will go up a revision even if it did not actually upgraded something but the command succeeded, not urgent to upgrade this helm chart separately with triggers.
           set -x
+          echo "checking if a conflicting kube-prometheus-stack release exists already in cluster by other release name and cannot be managed.."
           
-          pwd
-          echo "$GITHUB_WORKSPACE"
+          existing_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("kube-prometheus-stack")) | .name')
+          
+          if [[ -n "$existing_release" && "$existing_release" != "my-monitoring" ]]; then
+            echo "monitor stack already running under release $existing_release, please rename manually to be managed by this workflow."
+          
+          elif [[ -n "$existing_release" && "$existing_release" == "my-monitoring" ]]; then
+            echo "upgrading managed-existing monitor stack release.."
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            cd charts/monitor/
+            helm upgrade my-monitoring prometheus-community/kube-prometheus-stack \
+              -n monitor -f monitor-stack-values.yaml
+            kubectl apply -f monitor-additional-resources.yaml
 
-          if helm list -n monitor | grep -qi my-monitoring; then
-            echo "monitor stack release exists, checking it is up & running."
-
-            if helm status my-monitoring -n monitor | grep -iq "STATUS: deployed" && \
-             kubectl get pods -n monitor | grep -iq grafana; then
-             echo "monitor stack is up & running, now checking logging stack.."
+            helm list -n monitor
+            if helm status my-monitoring -n monitor | grep -iq "deployed"; then
+              echo "monitor stack upgrade successful"
             else
-              echo "release might be broken - reinstalling monitor stack from scratch.."
-              cd charts/monitor/
-              helm uninstall my-monitoring -n monitor
-              helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-              helm install my-monitoring prometheus-community/kube-prometheus-stack \
-                -n monitor -f monitor-stack-values.yaml
-              kubectl apply -f monitor-additional-resources.yaml
+              echo "monitor stack upgrade may have failed"
+              exit 1
             fi
-
+              
           else
+            echo "monitor stack release does not exist, installing under name my-monitoring.."
             cd charts/monitor/
             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
             helm install my-monitoring prometheus-community/kube-prometheus-stack \
               -n monitor -f monitor-stack-values.yaml
             kubectl apply -f monitor-additional-resources.yaml
-          fi
 
-          echo "monitor stack is ok.."
+            kubectl get pods -n monitor
+            if helm status my-monitoring -n monitor | grep -iq "deployed"; then
+              echo "monitor stack install successful"
+            else
+              echo "monitor stack install may have failed"
+              exit 1
+            fi
+
+          fi
+    
 
       - name: Verify Logging Stack Is Up & Running
         run: |
           set -x
+          echo "checking if a conflicting loki-stack release exists already in cluster by other release name and cannot be managed.."
 
-          if helm list -n log | grep -iq loki; then
-            echo "loki stack release exists, checking it is up & running."
+          existing_loki_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("loki-stack")) | .name')
 
-            if helm status loki -n log | grep -iq "STATUS: deployed" && \
-             kubectl get svc -n log | grep -qi loki; then
-             echo "loki stack is up & running"
+          if [[ -n "$existing_loki_release" && "$existing_loki_release" != "loki" ]]; then
+            echo "loki stack already running under release $existing_loki_release, please rename manually to be managed by this workflow."
+          
+          elif [[ -n "$existing_loki_release" && "$existing_loki_release" == "loki" ]]; then
+            echo "upgrading managed-existing loki stack release.."
+            helm repo add grafana https://grafana.github.io/helm-charts
+            cd charts/log/
+            helm upgrade loki grafana/loki-stack \
+             -n log -f loki-values.yaml
+            
+            helm list -n log
+            if helm status loki -n log | grep -iq "deployed"; then
+              echo "loki upgrade successful"
             else
-              echo "release might be broken - reinstalling loki-stack from scratch.."
-              cd charts/logging/
-              helm uninstall loki -n log
-              helm repo add grafana https://grafana.github.io/helm-charts
-              helm install loki grafana/loki-stack \
-                --set grafana.enabled=false --set promtail.enabled=true \
-                --set loki.image.tag=2.9.3 -n log -f loki-values.yaml 
+              echo "loki upgrade may have failed"
+              exit 1
             fi
 
           else
-            cd charts/logging/
+            echo "loki stack release does not exist, installing under name loki.." 
+            cd charts/log/ 
             helm repo add grafana https://grafana.github.io/helm-charts
             helm install loki grafana/loki-stack \
-              --set grafana.enabled=false --set promtail.enabled=true \
-              --set loki.image.tag=2.9.3 -n log -f loki-values.yaml
-          fi
+             -n log -f loki-values.yaml
 
-          echo "loki stack is ok.."
+            kubectl get pods -n log
+            if helm status loki -n log | grep -iq "deployed"; then
+              echo "loki install successful"
+            else
+              echo "loki install may have failed"
+              exit 1
+            fi
+          fi
 
       - name: cleaning up docker hub older tags
         env:

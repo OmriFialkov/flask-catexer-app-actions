@@ -1,0 +1,9 @@
+dependencies:
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 69.3.2
+- name: custom-resources
+  repository: file://charts/custom-resources
+  version: 0.1.0
+digest: sha256:11efba3baff0aa5f567511c1567c96e3bc58b666910c98cc807b3bb4b2e2227f
+generated: "2025-02-19T22:38:44.683434+02:00"

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: custom-resources
+description: additional resources for kube-prometheus-stack.
+type: application
+version: 0.1.0
