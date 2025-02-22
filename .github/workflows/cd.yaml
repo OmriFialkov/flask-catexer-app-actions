@@ -87,52 +87,61 @@ jobs:
           helm upgrade --install release flaskrepo/helm-flask
           helm list
 
-      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode, upgrade can be from values.yaml or published chart itself.
-        run: | # helm list in the end to make sure whether upgrade took place or not - will go up a revision even if it did not actually upgraded something but the command succeeded, not urgent to upgrade this helm chart separately with triggers.
+      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode, upgrade can be from values.yaml or published chart itself. ( this script can update both subcharts automatically - except from local chart version increment and kube-prometheus-stack remote files like default values.yaml )
+        run: | # works, tested, helm list in the end to make sure whether upgrade took place or not - will go up a revision even if it did not actually upgraded something but the command succeeded, not urgent to upgrade this helm chart separately with triggers.
           set -x
-          echo "checking if a conflicting kube-prometheus-stack release exists already in cluster by other release name and cannot be managed.."
+          echo "checking if a conflicting monitoring release exists already in cluster by other release name and cannot be managed.."
           
-          existing_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("kube-prometheus-stack")) | .name')
+          existing_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("monitor-stack")) | .name')
           
           if [[ -n "$existing_release" && "$existing_release" != "my-monitoring" ]]; then
             echo "monitor stack already running under release $existing_release, please rename manually to be managed by this workflow."
           
-          elif [[ -n "$existing_release" && "$existing_release" == "my-monitoring" ]]; then
-            echo "upgrading managed-existing monitor stack release.."
+          elif [[ -n "$existing_release" && "$existing_release" == "my-monitoring" ]] || [[ -z "$existing_release" ]]; then
+            echo "no conflicting monitoring release exists in cluster, will install / upgrade my-monitoring release"
+
+            cd charts/monitor-stack/
             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-            cd charts/monitor/
-            helm upgrade my-monitoring prometheus-community/kube-prometheus-stack \
-              -n monitor -f monitor-stack-values.yaml
-            kubectl apply -f monitor-additional-resources.yaml
+            helm dependency update .
 
-            helm list -n monitor
-            if helm status my-monitoring -n monitor | grep -iq "deployed"; then
-              echo "monitor stack upgrade successful"
+            helm list -n monitor | grep -iq "my-monitoring"
+            if [[ $? -eq 0 ]]; then
+              echo "release found, will upgrade"
+
+              last_revision=$(helm history my-monitoring -n monitor --max 1 | awk 'NR==2 {print $1}')
+              echo "last revision is $last_revision - debugging"
+
+              helm upgrade my-monitoring . -n monitor
+              status=$?
+
+              if [[ $status -eq 0 ]]; then
+                echo "upgrade successful"
+              else
+                echo "upgrade may have failed - initializing rollback and exiting"
+                helm rollback my-monitoring $last_revision -n monitor
+                exit 1
+              fi
+
             else
-              echo "monitor stack upgrade may have failed"
-              exit 1
-            fi
-              
-          else
-            echo "monitor stack release does not exist, installing under name my-monitoring.."
-            cd charts/monitor/
-            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-            helm install my-monitoring prometheus-community/kube-prometheus-stack \
-              -n monitor -f monitor-stack-values.yaml
-            kubectl apply -f monitor-additional-resources.yaml
+              echo "release not found, will install"
 
-            kubectl get pods -n monitor
-            if helm status my-monitoring -n monitor | grep -iq "deployed"; then
-              echo "monitor stack install successful"
-            else
-              echo "monitor stack install may have failed"
-              exit 1
-            fi
 
+              helm install my-monitoring . -n monitor
+              status=$?
+              if [[ $status -eq 0 ]]; then
+                echo "install successful"
+              else
+                echo "install may have failed - initializing cleanup and exiting"
+                helm uninstall my-monitoring -n monitor
+                exit 1
+              fi
+            fi 
+
+            helm status my-monitoring -n monitors
           fi
     
 
-      - name: Verify Logging Stack Is Up & Running
+      - name: Verify Logging Stack Is Up & Running # for local subchart files - will be updated with helm upgrade only - sufficient.
         run: |
           set -x
           echo "checking if a conflicting loki-stack release exists already in cluster by other release name and cannot be managed.."
