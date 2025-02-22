@@ -1,7 +1,6 @@
 # service monitor and dashboards are outside of this file, sidecar used.
 kube-prometheus-stack:
   grafana:
-    adminPassword: "admin"
     grafana.ini:
       date_format:
         default_timezone: "browser"
