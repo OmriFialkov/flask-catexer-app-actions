@@ -54,19 +54,21 @@ jobs:
           name: image_tag
           path: image_tag.txt
 
-      - name: Build Docker Compose Image # no cache anyway - removed --no-cache in build command.
+      - name: Build Docker Compose Image
         run: |
-            docker compose build
+            pwd
+            ls
+            docker compose build --no-cache
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
   
-      - name: Push Docker Image # in the end: need to do push after tests. #####
+      - name: Push Docker Image
         run: |
             docker images    
             docker push ${IMAGE_NAME}:${IMAGE_TAG}
             docker push ${IMAGE_NAME}:latest
 
       - name: Test - Running Project
-        run: | # running without pulling nor building flask image because it is already built - docker compose reads the same image name by image context.
+        run: | # running without pulling flask because it is already built.
             ls
             docker images
             docker compose up -d
