@@ -104,40 +104,36 @@ jobs:
             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
             helm dependency update .
 
-            helm list -n monitor | grep -iq "my-monitoring"
-            if [[ $? -eq 0 ]]; then
+            if helm list -n monitor | grep -iq "my-monitoring"; then
               echo "release found, will upgrade"
 
               last_revision=$(helm history my-monitoring -n monitor --max 1 | awk 'NR==2 {print $1}')
               echo "last revision is $last_revision - debugging"
 
-              helm upgrade my-monitoring . -n monitor
-              status=$?
-
-              if [[ $status -eq 0 ]]; then
-                echo "upgrade successful"
-              else
+              if ! helm upgrade my-monitoring . -n monitor; then
                 echo "upgrade may have failed - initializing rollback and exiting"
                 helm rollback my-monitoring $last_revision -n monitor
                 exit 1
               fi
 
+              echo "upgrade successful"
+
             else
               echo "release not found, will install"
 
 
-              helm install my-monitoring . -n monitor
-              status=$?
-              if [[ $status -eq 0 ]]; then
-                echo "install successful"
-              else
+              if ! helm install my-monitoring . -n monitor; then
                 echo "install may have failed - initializing cleanup and exiting"
                 helm uninstall my-monitoring -n monitor
                 exit 1
               fi
+
+              echo "install successful"
+
             fi 
 
-            helm status my-monitoring -n monitors
+            helm status my-monitoring -n monitor
+            
           fi
     
 
