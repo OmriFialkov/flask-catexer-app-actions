@@ -1,16 +1,16 @@
-name: app ci
+name: app & helm ci
 
 on:
   push:
-    paths-ignore:
-      - 'charts/**'
-      - 'README.md'
+    paths:
+      - 'charts/helm-flask/**'
+      - 'app/**'
     branches:
       - main
-  pull_request:
-    paths-ignore:
-      - 'charts/**'
-      - 'README.md'
+  pull_request: # test
+    paths:
+      - 'charts/helm-flask/**'
+      - 'app/**'
     branches:
       - main
 
@@ -19,19 +19,25 @@ env:
   IMAGE_TAG: 0.0.${{ github.run_number }}
 
 jobs:
-  build-Test:
+  Build-Test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Login to Docker Hub # prepares the environment. 
+      - name: Check If App Dir Changed
+        if: contains(join(github.event.head_commit.modified, ','), 'app/')
+        run: echo "APP_MODIFIED=true" >> $GITHUB_ENV
+
+      - name: APP CI - Login to Docker Hub # prepares the environment.
+        if: env.APP_MODIFIED == 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.dockeruser }} # github secrets
           password: ${{ secrets.dockertoken }} # github secrets
       
-      - name: Set Environment Variables # GITHUB_ENV - just to access them quicker in current job by name only.
+      - name: APP CI - Set Environment Variables # GITHUB_ENV - just to access them quicker in current job by name only.
+        if: env.APP_MODIFIED == 'true'
         run: |
             echo "FLASK_ENV=${{ vars.FLASK_ENV }}" >> $GITHUB_ENV
             echo "MYSQL_HOST=${{ vars.MYSQL_HOST }}" >> $GITHUB_ENV
@@ -41,31 +47,27 @@ jobs:
             echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
             echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> $GITHUB_ENV
       
-      - name: Debug Environment Variables & Upload to Artifact
+      - name: APP CI - Debug Environment Variables
+        if: env.APP_MODIFIED == 'true'
         run: |
               echo "IMAGE_NAME=${IMAGE_NAME}"
               echo "IMAGE_TAG=${IMAGE_TAG}"
-              echo "${IMAGE_TAG}" > image_tag.txt
-              cat image_tag.txt
 
-      - name: Upload IMAGE_TAG Variable to Artifact for Helm CI
-        uses: actions/upload-artifact@v4
-        with:
-          name: image_tag
-          path: image_tag.txt
-
-      - name: Build Docker Compose Image # no cache anyway - removed --no-cache in build command.
+      - name: APP CI - Build Docker Compose Image # no cache anyway - removed --no-cache in build command.
+        if: env.APP_MODIFIED == 'true'
         run: |
             docker compose build
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
   
-      - name: Push Docker Image # in the end: need to do push after tests. #####
+      - name: APP CI - Push Docker Image # in the end: need to do push after tests. #####
+        if: env.APP_MODIFIED == 'true'
         run: |
             docker images    
             docker push ${IMAGE_NAME}:${IMAGE_TAG}
             docker push ${IMAGE_NAME}:latest
 
-      - name: Test - Running Project
+      - name: APP CI - Test - Running Project
+        if: env.APP_MODIFIED == 'true'
         run: | # running without pulling nor building flask image because it is already built - docker compose reads the same image name by image context.
             ls
             docker images
@@ -73,7 +75,8 @@ jobs:
             sleep 1
             docker compose ps
       
-      - name: Run Tests
+      - name: APP CI - Run Tests # another tests. bandit etc..... #######
+        if: env.APP_MODIFIED == 'true'
         run: |
             sleep 3
             docker compose logs
@@ -81,7 +84,65 @@ jobs:
             curl -f http://localhost:${{ env.PORT }}
             echo "tests passed.."
 
-# another tests?
+      - name: APP CI + HELM CI - Insert Image Tag to My Helm Chart values.yaml
+        if: env.APP_MODIFIED == 'true'
+        run: |
+          echo "updating image tag in values.yaml to ${IMAGE_TAG}"
+          cd charts/helm-flask
+          sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
+          cat ./values.yaml
+
+      - name: Helm CI - Install Helm
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      - name: Helm CI - Update Helm Chart Version
+        run: |
+          cd charts/helm-flask
+          sed -i "s/version: .*/version: 0.0.${{ github.run_number }}/g" ./Chart.yaml
+          echo "# this file was modified by a ci to update helm version tagging" >> ./Chart.yaml
+
+      - name: Helm CI - Package Helm Chart
+        run: |
+          cd charts
+          helm package helm-flask --destination ..
+          cd ..
+          ls -lrta
+      
+      - name: Helm CI - Update Helm Repo Index
+        run: |
+          helm repo index --url https://omrifialkov.github.io/helm-flaskgif .
+          ls -lrta
+
+      - name: Helm CI - Push Updated Helm Chart
+        env:
+          HELM_REPO_PAT: ${{ secrets.HELM_REPO_PAT }}
+        run: |
+          set -x
+          git clone https://${HELM_REPO_PAT}@github.com/OmriFialkov/helm-flaskgif.git helmrepo
+          cd helmrepo
+          ls -lrta
+          git config --global user.name "github-actions-app"
+          git config --global user.email "github-actions@gmail.com"
+
+          rm -f *.tgz && rm -f index.yaml
+          cp ../*.tgz .
+          cp ../index.yaml .
+          ls -lrta
+
+          git add .
+          git commit -m "Updated helm chart version from APP REPO TRIGGER - Version 0.0.${{ github.run_number }}"
+          git push origin main
+          echo "pushed updated helm chart to helm-repo"
+
+
+
+
+
+
+
+
 
 # NOTES:
 #____________________________________________________________________________________________________

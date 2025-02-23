@@ -1,20 +1,12 @@
 name: helm ci
 
 on:
-    push:
-      paths:
-        - 'charts/helm-flask/**'
-      branches:
-        - main
     pull_request:
       paths:
         - 'charts/helm-flask/**'
       branches:
         - main
-    workflow_run:
-      workflows: ["app ci"]
-      types:
-        - completed
+
 
 jobs:
   helm-chart-update:

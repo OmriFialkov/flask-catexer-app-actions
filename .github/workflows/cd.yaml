@@ -2,7 +2,7 @@ name: cd
 
 on:
   workflow_run:
-    workflows: ["helm ci"]
+    workflows: ["app & helm ci"]
     types:
       - completed
 
