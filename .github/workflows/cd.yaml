@@ -1,10 +1,8 @@
 name: cd
 
 on:
-  workflow_run:
-    workflows: ["app & helm ci"]
-    types:
-      - completed
+  pull_request:
+    branches: [ main ]
 
 jobs:
   deploy: # using helm cd here, 3/2/2025, google cloud k8s with terraform and helm.
