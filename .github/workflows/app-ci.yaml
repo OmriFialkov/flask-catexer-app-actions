@@ -25,6 +25,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Debug Modified Files
+        run: |
+         echo "Modified files: ${{ toJson(github.event.head_commit.modified) }}"    
+
       - name: Check If App Dir Changed
         if: contains(join(github.event.head_commit.modified, ','), 'app/')
         run: echo "APP_MODIFIED=true" >> $GITHUB_ENV
