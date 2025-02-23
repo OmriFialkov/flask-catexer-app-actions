@@ -25,13 +25,26 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Debug Modified Files
+      - name: Debug GitHub SHA values
         run: |
-         echo "Modified files: ${{ toJson(github.event.head_commit.modified) }}"    
+          echo "Previous commit (before push): ${{ github.event.before }}"
+          echo "Latest commit (new push): ${{ github.sha }}"
+      
+      - name: Debug Modified Files using Git
+        run: |
+          echo "Modified files between commits:"
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+         
 
       - name: Check If App Dir Changed
-        if: contains(join(github.event.head_commit.modified, ','), 'app/')
-        run: echo "APP_MODIFIED=true" >> $GITHUB_ENV
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^app/"; then
+            echo "app dir changed"
+            echo "APP_MODIFIED=true" >> $GITHUB_ENV
+          else
+            echo "app dir not changed"
+            echo "APP_MODIFIED=false" >> $GITHUB_ENV
+          fi
 
       - name: APP CI - Login to Docker Hub # prepares the environment.
         if: env.APP_MODIFIED == 'true'
