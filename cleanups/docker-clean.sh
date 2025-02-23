@@ -8,7 +8,7 @@ usage: ./docker-clean.sh
 starting..
 """
 
-# this variables are secrets fetched from github actions' runner environment.
+# this variables are secrets fetched from github actions' runner environment..
 docker_user="${DOCKER_USER}"
 docker_repo="${DOCKER_REPO}"
 docker_token="${DOCKERTOKEN}"

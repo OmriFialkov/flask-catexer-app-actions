@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 3 # shallow clone - fetch last 3 commits
 
       - name: Debug GitHub SHA values
         run: |
