@@ -1,0 +1,314 @@
+
+# deploy: # using helm cd here, 2/2/2025, azure-k8s-v2 azure ci cd with terraform deploy k8s helm.
+#     runs-on: ubuntu-latest
+#     needs: build-Test
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: setup Terraform
+#         uses: hashicorp/setup-terraform@v2
+#         with: 
+#           terraform_wrapper: false 
+
+#       - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: azure login # to run helm in runner
+#         run: |
+#           set -ex
+#           az login --service-principal \
+#               --username ${{ secrets.AZURE_CLIENT_ID }}  \
+#               --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+#               --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+#       - name: Terraform Init
+#         env:
+#           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#         run: |
+#           cd azure-k8s-v2
+#           terraform init
+
+#       - name: Terraform Apply # update cluster infrastructure.
+#         env:
+#           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#         run: |
+#           cd azure-k8s-v2
+#           terraform apply -auto-approve
+
+#       - name: Install Helm
+#         run: |
+#             curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+#             helm version
+
+#       - name: Add and Update Helm Repository
+#         run: |
+#             helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
+#             helm repo update
+#             helm search repo flaskrepo --versions
+          
+#       - name: Set AKS Context # uses az aks get-credentials internally.
+#         uses: azure/aks-set-context@v3
+#         with:
+#           resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
+#           cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+
+#       - name: Deploy Flask App Using Helm, Updating Release and App-Image (--set flag)
+#         run: |
+#           set -ex
+#           echo "IMAGE_TAG=${IMAGE_TAG}"
+#           helm upgrade --install release flaskrepo/helm-flask \
+#             --namespace default \
+#             --set flaskApp.tag=${IMAGE_TAG}
+#           helm list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # exer 7 v2 deploy with azure k8s terraform k8s infrastructure, 27/1.
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build-Test # ensures that the build-test job has completed successfully.
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: setup Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with: 
+  #         terraform_wrapper: false 
+
+  #     - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1
+
+  #     - name: azure login # to run kubectl in runner
+  #       run: |
+  #         set -ex
+  #         az login --service-principal \
+  #             --username ${{ secrets.AZURE_CLIENT_ID }}  \
+  #             --password ${{ secrets.AZURE_CLIENT_SECRET }} \
+  #             --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+  #     - name: Terraform Init
+  #       env:
+  #         ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #       run: |
+  #         cd azure-k8s-v2
+  #         terraform init
+
+  #     - name: Terraform Apply # update cluster infrastructure.
+  #       env:
+  #         ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #       run: |
+  #         cd azure-k8s-v2
+  #         terraform apply -auto-approve
+
+  #     - name: setup kubectl
+  #       uses: azure/setup-kubectl@v4
+  #       with:
+  #         version: 'v1.31.0'
+          
+  #     - name: Set AKS Context # uses az aks get-credentials internally.
+  #       uses: azure/aks-set-context@v3
+  #       with:
+  #         resource-group: ${{ secrets.AZURE_CLUSTER_RESOURCE_GROUP }}
+  #         cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+
+  #     - name: deploy flask-app to k8s
+  #       run: |
+  #         set -ex
+  #         kubectl apply -f ./k8s-config
+  #         kubectl patch deployment flask-app-deployment \
+  #           -p '{"spec":{"template":{"spec":{"containers":[{"name":"flask-app","image":"crazyguy888/catexer-actions:0.0.${{ github.run_number }}"}]}}}}'
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # disabled terraform exer 7 v1 deploy with ec2 and azure k8s temporarily 26/1. 
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build-Test # ensures that the build-test job has completed successfully, 7.
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: setup SSH PRIVATE KEY for terraform future remote-exec
+  #       run: |
+  #         mkdir -p ~/.ssh
+  #         echo "${{ secrets.SSH_AWS_PRIVATE_KEY }}" > ~/.ssh/my-aws-key.pem
+  #         chmod 600 ~/.ssh/my-aws-key.pem
+
+  #     - name: setup Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with: 
+  #         terraform_wrapper: false
+
+  #     - name: Terraform Init
+  #       run: |
+  #         cd azure-k8s
+  #         terraform init 
+
+  #     - name: Configure AWS Credentials # can be used also without built action, but it is recommended.
+  #       uses: aws-actions/configure-aws-credentials@v2 # with aws configure set commands.
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1
+
+  #     - name: Terraform Apply
+  #       env:
+  #         TF_VAR_azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+  #         TF_VAR_azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+  #         TF_VAR_azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+  #       run: |
+  #         cd azure-k8s
+  #         terraform apply -auto-approve
+
+  #     - name: Cleanup - Terraform Destroy
+  #       env:
+  #         TF_VAR_azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+  #         TF_VAR_azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+  #         TF_VAR_azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+  #       run: |
+  #         cd azure-k8s
+  #         terraform destroy -auto-approve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # disabled terraform exer 6 deploy with docker-compose temporarily 25/1.
+
+  # deploy: # using terraform to deploy to aws ec2.
+  #   runs-on: ubuntu-latest
+  #   needs: build-Test # ensures that the build-test job has completed successfully.
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with: 
+  #         terraform_wrapper: false
+
+  #     - name: Terraform Init
+  #       run: terraform init 
+
+  #     - name: Configure AWS Credentials # can be used also without built action, but it is recommended.
+  #       uses: aws-actions/configure-aws-credentials@v2 # with aws configure set commands.
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1
+
+  #     - name: Terraform Apply
+  #       env:
+  #         TF_VAR_image_tag: "0.0.${{ github.run_number }}"
+  #       run: terraform apply -auto-approve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # disabled k8s deploy job - k8s lerning exer - to google cloud sela - temporarily for terraform testing with aws deploy 17/1.
+
+  # deploy-k8s:
+  #   runs-on: ubuntu-latest
+  #   needs: test # ensures that the test job has completed successfully to proceed.
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: modify flask version in file flask-k8s.yaml
+  #       run: |
+  #           set -ex
+  #           sed -i "s/latest/0.0.${{ github.run_number }}/g" ./k8s-config/flask-k8s.yaml
+  #           cat ./k8s-config/flask-k8s.yaml
+
+  #     - name: scp k8s yamls to vm
+  #       env:
+  #         SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+  #         SSH_USER: ${{ secrets.SSH_USER }}
+  #         REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  #       run: |
+  #         set -ex
+  #         sshpass -p $SSH_PASSWORD scp -v -o StrictHostKeyChecking=no \
+  #          k8s-config/db-k8s.yaml \
+  #          k8s-config/flask-k8s.yaml \
+  #          k8s-config/vars-k8s.yaml \
+  #          $SSH_USER@$REMOTE_HOST:/home/$SSH_USER/hey
+
+  #     - name: ssh and apply YAMLs
+  #       env:
+  #         SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+  #         SSH_USER: ${{ secrets.SSH_USER }}
+  #         REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  #       run: |
+  #         set -ex
+  #         sshpass -p $SSH_PASSWORD ssh -v -o StrictHostKeyChecking=no \
+  #          $SSH_USER@$REMOTE_HOST "cd /home/$SSH_USER/hey && kubectl apply -f ."
