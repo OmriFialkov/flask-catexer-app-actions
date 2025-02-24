@@ -1,4 +1,4 @@
-name: app & helm ci
+name: ci cd with helm
 
 on:
   push:
