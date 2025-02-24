@@ -344,7 +344,7 @@ jobs:
 # ${IMAGE_TAG} is referenced from top level env variable IMAGE_TAG up there.
 # --set flag overrides default value in values.yaml which is.
 # passed to flask deployment in deployment-flask.yaml so image tag is changed everytime - old way.
-# when naming workflow yaml with _ it probably resets its workflow run number to 1 - the github.run_number.
+# when naming workflow yaml name: field in it - probably resets its workflow run number to 1, the github.run_number.
 # with 3 helm charts - monitor-stack, logging and flask app.
 # dashboards and service monitors are manual - not in values.yaml - additional helm chart.
 # IF WE UPDATE THE VALUES.YAML OF THE CHART AND RUN HELM UPGRADE - WILL IT GO UP A REVISION? - YES IT GOES UP A REVISION.
