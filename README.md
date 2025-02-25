@@ -2,7 +2,7 @@
 
 This project is a **Flask-based web application** that dynamically serves a **random dog GIF** from a **Dockerized database** every time the page is refreshed. It also keeps track of visitor counts and exposes **Prometheus-compatible metrics** for monitoring. The application is designed for **containerized deployment** and runs on a **Kubernetes (K8s) cluster** in **Google Cloud Platform (GCP)**. The entire deployment process is automated through a **CI/CD pipeline using GitHub Actions**, ensuring that every code update is **built, pushed to Docker Hub**, and then deployed to the Kubernetes cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Terraform state management. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the application.  
 
-![Flask](Images/flask.drawio (3).png)
+![Flask](Images/flask.png)
 
 ---
 
