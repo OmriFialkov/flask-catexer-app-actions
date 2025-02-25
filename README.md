@@ -5,9 +5,37 @@ This project is a **Flask-based dockerized web-app** that dynamically serves a *
 ---
 ## Project Flow Chart
 ![Flask](Images/flask.png)
-### Breakdown:
+### **CI/CD Process Breakdown**  
 
-when a
+1. **Code Push & CI/CD Pipeline Trigger**  
+   When new code is pushed to the app/ path in the repository, GitHub Actions automatically detects the change and triggers the CI/CD pipeline. This ensures that every update follows a structured, automated deployment process.  
+
+2. **Building the Docker Image**  
+   The pipeline starts by building a new Docker image of the Flask application. This image encapsulates all necessary dependencies and configurations, along with the updated code, ensuring a consistent runtime environment across deployments.  
+
+3. **Pushing the Image to Docker Hub**  
+   Once the Docker image is successfully built, it is pushed to Docker Hub, a public cloud container registry. Storing the image in Docker Hub will allow pulling it later on.  
+
+4. **Testing with Docker Compose**  
+   Before deploying to the production environment, a local test is executed using Docker Compose. This ensures that the containerized application runs as expected with no critical errors - before being deployed to the Kubernetes cluster.  
+
+5. **Updating the Helm Chart**  
+   After passing the test phase, the pipeline then uses Helm, a package manager for Kubernetes. Helm defines the application's infrastructure and configuration settings that will be deployed to the cluster as Kubernetes manifests. the updated chart is packed and pushed to github pages helm repository. this step ensures that the latest updated chart is always available to install for deployment.
+
+6. **Infrastructure Provisioning with Terraform**  
+   The Kubernetes infrastructure is managed using Terraform, an Infrastructure-as-Code (IaC) tool. Terraform provisions and maintains the GKE (Google Kubernetes Engine) cluster, ensuring a scalable and replicable deployment environment.
+
+7. **Deploy to Kubernetes**
+   After infrastructure is up and running, helm is used to deploy or upgrade a running release in the kubernetes cluster by using the updated helm chart version which contains the latest image that was built earlier. the chart 
+
+8. **Exposing Metrics with Prometheus & Monitoring**  
+   Once deployed, the application not only serves random dog GIFs but also exposes Prometheus-compatible metrics. These metrics include visitor counts and other key performance indicators, allowing real-time monitoring of the application's usage, health and stats. Prometheus continuously scrapes the application's exposed metrics, providing real-time insights into its behavior. These insights are visualized using monitoring tool Grafana, which is allowing for beautiful and graphical user-friendly performance analysis. 
+
+9. **Continuous Logging and Issue Detection with Loki**
+Loki, a log aggregation system designed for Kubernetes, is deployed using Helm to enhance observability.
+Once deployed, Loki collects logs from the running application and other Kubernetes components, allowing for centralized log storage and easy retrieval. These logs are then accessible through Grafana, enabling real-time log analysis, troubleshooting, and debugging. This way, the system ensures that any errors, anomalies, or unexpected behaviors in the application can be quickly identified and addressed, improving reliability and maintainability.
+
+**This ensures that every code change is built, tested, validated, and deployed automatically while maintaining observability and infrastructure consistency.**
 
 ---
 
@@ -33,8 +61,6 @@ In **GitHub Actions → Variables**, add the following variables:
 - `GKE_CLUSTER_NAME` – The **name of your Kubernetes cluster** in GCP.  
 - `PROJECT_ID` – Your **Google Cloud project ID**.  
 - `REGION` – The **GCP region** where the cluster is deployed.  
-- `HELM_RELEASE_NAME` – The **name of the Helm release** used for deployment.  
-- `PROMETHEUS_NAMESPACE` – The **Kubernetes namespace** for Prometheus monitoring.  
 
 After configuring these secrets and variables, the GitHub Actions pipeline will be able to **build, test, push, and deploy** the application automatically.  
 
