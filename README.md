@@ -1,20 +1,19 @@
 # 🐶 Dog Gif App  
 
-This project is a **Flask-based web application** that dynamically serves a **random dog GIF** from a **Dockerized database** every time the page is refreshed. It also keeps track of visitor counts and exposes **Prometheus-compatible metrics** for monitoring. The application is designed for **containerized deployment** and runs on a **Kubernetes (K8s) cluster** in **Google Cloud Platform (GCP)**. The entire deployment process is automated through a **CI/CD pipeline using GitHub Actions**, ensuring that every code update is **built, pushed to Docker Hub**, and then deployed to the Kubernetes cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Terraform state management. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the application.  
+This project is a **Flask-based dockerized web-app** that dynamically serves a **random dog GIF** from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count and exposes it, along with many other performance metrics, as Prometheus-compatible metrics for monitoring. The python application is designed for **containerized deployment** and runs on a **Kubernetes cluster** in **Google Cloud**. The entire deployment process is automated through a **CI/CD pipeline using GitHub Actions**, ensuring that every code update is **built and pushed to Docker Hub**, then tested locally using docker compose and is deployed to the Kubernetes cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used widely for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project, including monitoring and logging helm charts as well. 
 
 ---
 ## Project Flow Chart
 ![Flask](Images/flask.png)
 ### Breakdown:
 
-1.
-2.
+when a
 
 ---
 
-### 📦 Getting Started  
+## 📦 Getting Started  
 
-To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets and variables > Repository secrets** section.  
+To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
 
 ### 🔑 Required Secrets  
 
