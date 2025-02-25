@@ -4,7 +4,7 @@ This project is a **Flask-based dockerized web-app** that dynamically serves a *
 
 ---
 ## Project Flow Chart
-![Flask](Images/flask.png)
+![Flask](images/flask.drawio.png)
 ### **CI/CD Process Breakdown**  
 
 1. **Code Push & CI/CD Pipeline Trigger**  
