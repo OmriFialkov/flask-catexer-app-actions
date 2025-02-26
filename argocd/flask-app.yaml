@@ -15,4 +15,4 @@ spec:
     server: https://kubernetes.default.svc # ????
     namespace: default  # target namespace of flask app - where will it run
   syncPolicy:
-    automated: {}
+    automated: null
