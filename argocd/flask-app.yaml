@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flask-app # name of app
+  namespace: argocd  # This is where Argo CD runs
+spec:
+  project: default # argo cd project that the app belongs to - default is good, like namespaces.
+  source:
+    repoURL:  https://omrifialkov.github.io/helm-flaskgif  # Helm repository URL
+    chart: helm-flask       # Helm chart name, eg. flask-chart
+    targetRevision: ">0.0.1 <1.0.0"  # Version of the Helm chart you want to deploy, take from main branch, e.g., 1.0.0
+    helm:
+      values: ""  # Optional: pass custom values for app helm chart, {} - means blank.
+  destination:
+    server: https://kubernetes.default.svc # ????
+    namespace: default  # target namespace of flask app - where will it run
+  syncPolicy:
+    automated: {}
