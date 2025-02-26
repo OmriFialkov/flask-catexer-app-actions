@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+  labels:
+    app: flask-app # for service monitor discovery.
+spec:
+  type: LoadBalancer
+  selector:
+    app: flask-app
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: {{ .Values.flaskApp.port }}

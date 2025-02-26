@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+  labels:
+    app: flask-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: {{ .Values.flaskApp.image }}:{{ .Values.flaskApp.tag }}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "{{ .Values.flaskApp.resources.requests.memory }}"
+            cpu: "{{ .Values.flaskApp.resources.requests.cpu }}"
+          limits:
+            memory: "{{ .Values.flaskApp.resources.limits.memory }}"
+            cpu: "{{ .Values.flaskApp.resources.limits.cpu }}"
+        ports:
+        - containerPort: {{ .Values.flaskApp.port }}
+        env:
+        - name: FLASK_ENV
+          value: {{ .Values.flaskApp.flaskEnv }}
+        - name: MYSQL_HOST
+          value: {{ .Values.flaskApp.mysqlHost }}
+        - name: MYSQL_USER
+          value: {{ .Values.flaskApp.mysqlUser }}
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: {{ .Values.flaskApp.mysqlPasswordSecretKey }}
+        - name: MYSQL_DATABASE
+          value: {{ .Values.flaskApp.mysqlDatabase }}
+        - name: PORT
+          value: "{{ .Values.flaskApp.port }}"
