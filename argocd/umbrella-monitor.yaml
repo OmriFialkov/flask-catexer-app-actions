@@ -9,8 +9,13 @@ spec:
     repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
     targetRevision: main
     path: argocd/monitor-stack  # Path to the umbrella chart
+    plugin:
+      name: kustomize
+      env:
+        - name: KUSTOMIZE_ENABLE_HELM
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitor  # Change if you want to deploy elsewhere
+    namespace: monitor
   syncPolicy:
     automated: null
