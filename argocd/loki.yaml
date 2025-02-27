@@ -7,7 +7,7 @@ spec:
   project: default  # ArgoCD project to which this app belongs
   source:
     repoURL: https://grafana.github.io/helm-charts  # URL of the external Helm chart repository for Loki
-    targetRevision: "2.10.2"  # You can specify a version or use "latest"
+    targetRevision: "2.10.1"  # You can specify a version or use "latest"
     chart: loki-stack  # Chart name for Loki in the repository
     helm:
       valueFiles:

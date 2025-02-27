@@ -21,7 +21,7 @@ loki:
     jsonData: "{}"
     uid: ""
   image:
-    tag: 2.9.2  # <-- Merged from --set loki.image.tag=2.9.3
+    tag: 2.9.3  # <-- Merged from --set loki.image.tag=2.9.3
 
 promtail:
   enabled: true  # <-- Merged from --set promtail.enabled=true
