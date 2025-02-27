@@ -14,5 +14,3 @@ spec:
     namespace: monitor  # Change if you want to deploy elsewhere
   syncPolicy:
     automated: null
-    syncOptions:
-      - ServerSideApply=true
