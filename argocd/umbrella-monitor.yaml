@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitor-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
+    targetRevision: main
+    path: argocd/monitor-stack  # Path to the umbrella chart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitor  # Change if you want to deploy elsewhere
+  syncPolicy:
+    automated: null
+    syncOptions:
+      - ServerSideApply=true
