@@ -129,27 +129,19 @@ jobs:
           helm package helm-flask --destination ..
           cd ..
           ls -lrta
-      
-      - name: Helm CI - Update Helm Repo Index
-        run: |
-          helm repo index --url https://omrifialkov.github.io/helm-flaskgif .
-          ls -lrta
 
-      - name: Helm CI - Push Updated Helm Chart
+      - name: Helm CI - Push Updated Helm Chart to GitHub Pages - Including Updated TGZ & Updated Index.yaml
         env:
           HELM_REPO_PAT: ${{ secrets.HELM_REPO_PAT }}
         run: |
           set -x
           git clone https://${HELM_REPO_PAT}@github.com/OmriFialkov/helm-flaskgif.git helmrepo
           cd helmrepo
-          ls -lrta
           git config --global user.name "github-actions-app"
           git config --global user.email "github-actions@gmail.com"
 
-          rm -f *.tgz && rm -f index.yaml
           cp ../*.tgz .
-          cp ../index.yaml .
-          ls -lrta
+          helm repo index --merge index.yaml --url https://omrifialkov.github.io/helm-flaskgif .
 
           git add .
           git commit -m "Updated helm chart version from APP REPO TRIGGER - Version 0.0.${{ github.run_number }}"
