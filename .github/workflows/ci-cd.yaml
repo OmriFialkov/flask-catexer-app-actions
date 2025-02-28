@@ -327,6 +327,14 @@ jobs:
           chmod +x ./cleanups/docker-clean.sh
           ./cleanups/docker-clean.sh
 
+      # - name: Cleaning Up Old Helm Charts in Helm Repo
+      #   env: 
+      #     HELM_REPO_PAT: ${{ secrets.HELM_REPO_PAT }}
+      #   run: |
+      #     ls -lrta
+      #     chmod +x ./cleanups/helm-clean.sh
+      #     ./cleanups/helm-clean.sh
+
 
 
 
