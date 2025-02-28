@@ -14,7 +14,7 @@ echo "Found: ${TGZ_FILES[*]}"
 while [ "${#TGZ_FILES[@]}" -gt 3 ]; do
     echo "Deleting: ${TGZ_FILES[0]}"
     rm -f "${TGZ_FILES[0]}"  # Delete the oldest
-    TGZ_FILES=("${TGZ_FILES[@]:1}")  # Remove first element
+    TGZ_FILES=("${TGZ_FILES[@]:1}")  # :1 starts from the second element - actually removing 0 index.
 done
 
 ls
