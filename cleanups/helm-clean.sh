@@ -12,7 +12,7 @@ echo "Installing git-restore-mtime..."
 sudo apt-get update && sudo apt-get install -y git-restore-mtime
 
 echo "Restoring original modification times..."
-git-restore-mtime
+/usr/lib/git-core/git-restore-mtime
 ls -ltr
 
 # Use mapfile command to correctly list all .tgz files sorted by oldest first
