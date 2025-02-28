@@ -6,7 +6,7 @@ version: 0.1.0
 
 dependencies:
   - name: kube-prometheus-stack
-    version: "48.2.2" # use the latest available each time.
+    version: "*" # use the latest available each time.
     repository: "https://prometheus-community.github.io/helm-charts"
   - name: custom-resources
     version: "0.1.0"

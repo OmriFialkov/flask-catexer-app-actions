@@ -3,22 +3,17 @@ kind: Application
 metadata:
   name: monitor-stack
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"  # Deploy after CRDs
 spec:
   project: default
   source:
     repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
     targetRevision: main
-    path: argocd/monitor-stack
-    helm:
-      values: |  # Skip CRD installation
-        kube-prometheus-stack:
-          skipCRDs: true
+    path: argocd/monitor-stack  # Path to the umbrella chart
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitor
+    namespace: monitor  # Change if you want to deploy elsewhere
   syncPolicy:
-    syncOptions:
-      - PruneLast=true
     automated: null
+    syncOptions:
+      - ServerSideApply=true
+      - PruneLast=true
