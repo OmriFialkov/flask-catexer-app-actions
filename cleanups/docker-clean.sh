@@ -55,11 +55,9 @@ echo "$tags" | jq -c '.[]' | while IFS= read -r tag_object; do
             "https://hub.docker.com/v2/repositories/$docker_user/$docker_repo/tags/$tag/"
         echo "tag $tag was deleted!!!!!!!!!"
         echo ""
-        sleep 1
     else
         echo "tag $tag is not outdated, keeping it"
         echo ""
-        sleep 1
     fi
 done
 
