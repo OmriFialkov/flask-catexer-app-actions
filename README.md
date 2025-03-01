@@ -1,11 +1,24 @@
-# 🐶 Dog Gif App  
+# 🐶 Dog Gif App
 
-This project is a **Flask-based dockerized web-app** that dynamically serves a **random dog GIF** from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count and exposes it, along with many other performance metrics, as Prometheus-compatible metrics for monitoring. The python application is designed for **containerized deployment** and runs on a **Kubernetes cluster** in **Google Cloud**. The entire deployment process is automated through a **CI/CD pipeline using GitHub Actions**, ensuring that every code update is **built and pushed to Docker Hub**, then tested locally using docker compose and is deployed to the Kubernetes cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used widely for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project, including monitoring and logging helm charts as well. 
+## Overview
+This project presents a **Flask-based dockerized web-app** integrated with GitHub Actions for CI/CD automation. The app dynamically serves a **random dog GIF** from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed to Docker Hub**, then tested with docker compose and is deployed to a K8S cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used widely for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
+
+### Features
+- **Flask Web Application**: A lightweight Python web app.
+- **GitHub Actions CI/CD**: Automated building, testing and deployment.
+- **Docker Support**: Containerized for easy deployment.
+- **Cloud Integration**: Ready for deployment to AWS/GCP.
+- **Infrastructure as Code**: Terraform for cloud provisioning and Helm for Kubernetes deployment.
+- **Monitoring & Logging**: Integrated Prometheus, Grafana, and Loki for observability -
+  - **Prometheus**: Collects application and infrastructure metrics.
+  - **Grafana**: Visualizes data through dashboards.
+  - **Loki**: Collects and stores logs for easy querying and analysis.
 
 ---
 ## Project Flow Chart
 ![Flask](images/flask.drawio.png)
-### **CI/CD Process Breakdown**  
+
+### **CI/CD Flow Breakdown**  
 
 1. **Code Push & CI/CD Pipeline Trigger**  
    When new code is pushed to the app/ path in the repository, GitHub Actions automatically detects the change and triggers the CI/CD pipeline. This ensures that every update follows a structured, automated deployment process.  
@@ -39,12 +52,18 @@ Once deployed, Loki collects logs from the running application and other Kuberne
 
 ---
 
-## 📦 Getting Started  
+## 📦 Setup Instructions 
 
-To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
+The following tools are used:
+- **Python 3.8+**
+- **Docker** (for containerized deployment)
+- **GitHub Actions enabled**
+- **Terraform** (for cloud infrastructure provisioning)
+- **Helm** (for Kubernetes deployment)
 
 ### 🔑 Required Secrets  
 
+To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
 Go to **GitHub Actions → Secrets** and add the following secrets:  
 
 - 'dockeruser' – Your Docker Hub username.  
@@ -171,6 +190,8 @@ Below is a high-level overview of how the Flask Catexer app functions from devel
 
 This flow ensures a **fully automated, scalable, and monitored deployment** of the Flask Catexer app in a **Kubernetes cluster on Google Cloud**.  
 
+## and exposes it, along with many other performance metrics, as Prometheus-compatible metrics for monitoring.
+## Security Considerations
 ---
 
 ## 🧹 Cleanup  
