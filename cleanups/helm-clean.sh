@@ -7,7 +7,7 @@ cd helmrepo || exit 1
 
 set -x
 
-# Update package list and install git-restore-mtime
+# install git-restore-mtime to fetch GitHub original commit times.
 echo "Installing git-restore-mtime..."
 sudo apt-get update && sudo apt-get install -y git-restore-mtime
 

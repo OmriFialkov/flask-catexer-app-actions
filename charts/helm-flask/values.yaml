@@ -1,4 +1,4 @@
-replicaCount: 2
+replicaCount: 4
 
 flaskApp:
   image: crazyguy888/catexer-actions
