@@ -66,24 +66,47 @@ The following tools are used:
 To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
 Go to **GitHub Actions → Secrets** and add the following secrets:  
 
-- 'dockeruser' – Your Docker Hub username.  
-- 'dockertoken' – Your Docker Hub access token - used to access docker hub in order to push new built images.  
-- 'GCP_CREDENTIALS' – A **Google Cloud service account key** in JSON format for authentication.
-- 'MYSQL_PASSWORD' - DB password.
-- 'MYSQL_ROOT_PASSWORD' - DB root password.
-- 'AWS_ACCESS_KEY_ID' – AWS access key for Terraform backend.  
-- 'AWS_SECRET_ACCESS_KEY' – AWS secret key for Terraform backend.  
+#### GitHub Secrets:
+- `dockeruser`: Docker username for login.
+- `dockertoken`: Docker token (password) for login.
+- `MYSQL_PASSWORD`: MySQL password for authentication.
+- `MYSQL_ROOT_PASSWORD`: MySQL root password.
+- `HELM_REPO_PAT`: Personal Access Token for Helm repository access.
+- `AWS_ACCESS_KEY_ID`: AWS credentials for accessing S3 and other AWS services.
+- `AWS_SECRET_ACCESS_KEY`: AWS secret key for S3 and other AWS services.
+- `GCP_SA_KEY`: Google Cloud Service Account Key for GCP access.
+- `GCP_PROJECT_ID`: Google Cloud Project ID.
+- `GCP_CLUSTER_NAME`: Google Cloud Kubernetes cluster name.
+- `GCP_ZONE`: Google Cloud zone for the Kubernetes cluster.
 
-### ⚙️ Required Variables  
-
-In **GitHub Actions → Variables**, add the following variables:  
-
-- `DOCKER_REPO` – The name of your **Docker Hub repository** where images will be pushed.  
-- `GKE_CLUSTER_NAME` – The **name of your Kubernetes cluster** in GCP.  
-- `PROJECT_ID` – Your **Google Cloud project ID**.  
-- `REGION` – The **GCP region** where the cluster is deployed.  
+#### GitHub Variables:
+- `FLASK_ENV`: Environment for Flask (e.g., development or production).
+- `MYSQL_HOST`: Host for the MySQL database.
+- `MYSQL_USER`: MySQL user.
+- `MYSQL_DATABASE`: The MySQL database name.
+- `PORT`: Port for Flask to run on.
+- `IMAGE_TAG`: Docker image tag, generated dynamically based on the GitHub run number.
+- `IMAGE_NAME`: Docker image name (`crazyguy888/catexer-actions`). 
 
 After configuring these secrets and variables, the GitHub Actions pipeline will be able to **build, test, push, and deploy** the application automatically.  
+These key variables and secrets are used for the configuration of the application and deployment processes.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/OmriFialkov/flask-catexer-app-actions.git
+cd flask-catexer-app-actions
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run Locally
+```bash
+flask run
+```
+The app will be accessible at `http://127.0.0.1:5000/`.
 
 ---
 
@@ -166,6 +189,23 @@ To uninstall the application:
 helm uninstall $HELM_RELEASE_NAME --namespace $PROMETHEUS_NAMESPACE
 ```
 
+
+
+
+Helm is used to deploy the Flask application to Kubernetes. The repository includes a Helm chart to manage application deployment.
+
+To install the application using Helm:
+```bash
+helm repo add catexer-repo <your-helm-repo-url>
+helm install flask-catexer catexer-repo/flask-catexer --values helm/values.yaml
+```
+
+For updates:
+```bash
+helm upgrade flask-catexer catexer-repo/flask-catexer --values helm/values.yaml
+```
+
+
 ---
 
 ## 🔄 Application Flow  
@@ -190,8 +230,6 @@ Below is a high-level overview of how the Flask Catexer app functions from devel
 
 This flow ensures a **fully automated, scalable, and monitored deployment** of the Flask Catexer app in a **Kubernetes cluster on Google Cloud**.  
 
-## and exposes it, along with many other performance metrics, as Prometheus-compatible metrics for monitoring.
-## Security Considerations
 ---
 
 ## 🧹 Cleanup  
