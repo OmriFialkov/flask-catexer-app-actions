@@ -1,7 +1,7 @@
 # Dog Gif App 🐶  
 
 ## Overview  
-This project presents a **Flask-based dockerized web-app** integrated in GitHub Actions Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
+This project presents a **Flask-based dockerized web-app** integrated in GitHub Actions Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster** as a part of IaC implementation. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
 
 ### Features
 - **Flask Web Application**: A lightweight Python web app.
@@ -91,6 +91,8 @@ Go to **GitHub Actions → Secrets** and add the following secrets:
 
 After configuring these secrets and variables, the GitHub Actions pipeline will be able to **build, test, push, and deploy** the application automatically.  
 
+---
+
 ## 🐳 Docker  
 
 The app is **containerized** using Docker, allowing it to be easily deployed in any environment.  
@@ -164,6 +166,8 @@ To uninstall the application:
 helm uninstall $HELM_RELEASE_NAME -n $NAMESPACE
 ```
 
+---
+
 ## Monitoring and Logging: Prometheus, Grafana & Loki
 
 To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.
@@ -176,6 +180,8 @@ Grafana connects to Prometheus as a data source, providing real-time dashboards 
 
 ### Loki
 Loki centralizes logs from the Flask application, making it easier to query and analyze application behavior.
+
+---
 
 ## Security Considerations
 
@@ -250,4 +256,5 @@ bash cleanups/helm-clean.sh
 ```
 
 This process helps you maintain a clean and organized Helm repository, ensuring that only the most recent and relevant chart versions are stored and available for deployments.
+
 ---
