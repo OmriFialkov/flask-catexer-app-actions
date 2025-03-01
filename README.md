@@ -12,7 +12,7 @@ This project presents a **Flask-based dockerized web-app** integrated in GitHub 
 - **Monitoring & Logging**: Integrated Prometheus, Grafana, and Loki for observability -
   - **Prometheus**: Collects application and infrastructure metrics.
   - **Grafana**: Visualizes data through dashboards.
-  - **Loki**: Collects and stores logs for easy querying and analysis.
+  - **Loki**: Collects and stores logs for easy querying and analysis. mysql k8s and how to use yourself and breakdown and all.
 
 ---
 ## Project Flow Chart
