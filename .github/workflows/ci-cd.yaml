@@ -28,12 +28,12 @@ jobs:
         with:
           fetch-depth: 3 # shallow clone - fetch last 3 commits specifically instead of last one only - for git diff
 
-      - name: Debug GitHub SHA values
+      - name: Debug GitHub SHA values # debug
         run: |
           echo "Previous commit (before push): ${{ github.event.before }}"
           echo "Latest commit (new push): ${{ github.sha }}"
       
-      - name: Debug Modified Files using Git
+      - name: Debug Modified Files using Git # debug
         run: |
           echo "Modified files between commits:"
           git diff --name-only ${{ github.event.before }} ${{ github.sha }}

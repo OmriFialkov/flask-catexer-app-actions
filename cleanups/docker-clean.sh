@@ -61,6 +61,7 @@ echo "$tags" | jq -c '.[]' | while IFS= read -r tag_object; do
     fi
 done
 
+sleep 4 # to fetch reliable data from docker hub api - without sleep it shows deleted tags as well.
 echo "deleted outdated tags, now showing remaining tags"
 echo ""
 #____________________________________________________________________________________________________
