@@ -1,7 +1,7 @@
-# 🐶 Dog Gif App
+# Dog Gif App 🐶  
 
-## Overview
-This project presents a **Flask-based dockerized web-app** integrated with GitHub Actions for CI/CD automation. The app dynamically serves a **random dog GIF** from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed to Docker Hub**, then tested with docker compose and is deployed to a K8S cluster. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used widely for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
+## Overview  
+This project presents a **Flask-based dockerized web-app** integrated in GitHub Actions Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster**, while **AWS S3 and DynamoDB** are leveraged for Backend-Terraform state management. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
 
 ### Features
 - **Flask Web Application**: A lightweight Python web app.
@@ -54,12 +54,13 @@ Once deployed, Loki collects logs from the running application and other Kuberne
 
 ## 📦 Setup Instructions 
 
-The following tools are used:
-- **Python 3.8+**
-- **Docker** (for containerized deployment)
-- **GitHub Actions enabled**
-- **Terraform** (for cloud infrastructure provisioning)
-- **Helm** (for Kubernetes deployment)
+The following tools are widely used in this project:
+- **Python & Flask Module**
+- **Docker** - for containerized deployment
+- **Terraform** - for cloud infrastructure provisioning - a k8s cluster
+- **Kubernetes** -  Runs and manages the flask app in a scalable and automated way.
+- **Helm** - Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
+- **GitHub Actions** - CI/CD Workflow
 
 ### 🔑 Required Secrets  
 
@@ -89,26 +90,6 @@ Go to **GitHub Actions → Secrets** and add the following secrets:
 - `IMAGE_NAME`: Docker image name (`crazyguy888/catexer-actions`). 
 
 After configuring these secrets and variables, the GitHub Actions pipeline will be able to **build, test, push, and deploy** the application automatically.  
-These key variables and secrets are used for the configuration of the application and deployment processes.
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/OmriFialkov/flask-catexer-app-actions.git
-cd flask-catexer-app-actions
-```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run Locally
-```bash
-flask run
-```
-The app will be accessible at `http://127.0.0.1:5000/`.
-
----
 
 ## 🐳 Docker  
 
@@ -118,8 +99,7 @@ The app is **containerized** using Docker, allowing it to be easily deployed in 
 
 The **Dockerfile** defines how the Flask app is packaged:  
 - Installs dependencies and Flask runtime.  
-- Copies the application files into the container.  
-- Sets up the necessary environment variables.  
+- Copies the application files into the container.   
 - Configures the web server to serve the app.  
 
 ### 🔹 Docker Compose  
@@ -159,76 +139,79 @@ terraform apply
 
 ## ☸️ Kubernetes & Helm  
 
-The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application.  
+In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application.  
 
 ### 🔹 How Helm is Used in This Project  
 
 - **Application Deployment**: Helm templates are used to define Kubernetes manifests for the Flask app, ensuring consistent deployment across environments.  
-- **Service Exposure**: A Kubernetes **Service** is defined to expose the application and allow external access.  
-- **Environment Configuration**: Helm values allow customization of deployment settings, such as resource limits, replica counts, and environment variables.  
-- **Prometheus Integration**: The deployment includes configuration for exposing metrics, which are scraped by **Prometheus** for monitoring.  
+- **Environment Configuration**: Helm values allow customization of deployment settings, such as resource limits, replica counts, and environment variables.
+- **Service Exposure**: A Kubernetes **Service** is defined to expose the application and allow external access.   
 - **Automated Updates**: The CI/CD pipeline uses Helm to automatically deploy the latest version of the app whenever a new image is built and pushed to Docker Hub.  
 
 ### 🔹 Deploying with Helm  
 
+Helm is used to deploy the Flask application to Kubernetes. The repository includes a Helm chart to manage application deployment.
 To install the application using Helm:  
 
 ```sh
-helm install $HELM_RELEASE_NAME ./helm-chart --namespace $PROMETHEUS_NAMESPACE
-```
-
-To upgrade the application after making changes:  
-
-```sh
-helm upgrade $HELM_RELEASE_NAME ./helm-chart
+helm repo add catexer-repo <your-helm-repo-url>
+helm install $HELM_RELEASE_NAME catexer-repo/helm-flask
 ```
 
 To uninstall the application:  
 
 ```sh
-helm uninstall $HELM_RELEASE_NAME --namespace $PROMETHEUS_NAMESPACE
+helm uninstall $HELM_RELEASE_NAME -n $NAMESPACE
 ```
 
+## Monitoring and Logging: Prometheus, Grafana & Loki
 
+To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.
 
+### Prometheus
+Prometheus collects metrics from the Flask application and provides insights into request durations, error rates, and system performance. Ensure that the application exposes an endpoint (e.g., `/metrics`) for Prometheus to scrape data.
 
-Helm is used to deploy the Flask application to Kubernetes. The repository includes a Helm chart to manage application deployment.
+### Grafana
+Grafana connects to Prometheus as a data source, providing real-time dashboards for monitoring key metrics.
 
-To install the application using Helm:
-```bash
-helm repo add catexer-repo <your-helm-repo-url>
-helm install flask-catexer catexer-repo/flask-catexer --values helm/values.yaml
-```
+### Loki
+Loki centralizes logs from the Flask application, making it easier to query and analyze application behavior.
 
-For updates:
-```bash
-helm upgrade flask-catexer catexer-repo/flask-catexer --values helm/values.yaml
-```
+## Security Considerations
 
+Ensuring security best practices is crucial to protect the application from vulnerabilities.
+In this project a couple of security measures are used to ensure that:
+
+- **GitHub Secrets:** Used for CI/CD pipeline credentials such as Docker and GitHub tokens, ensuring sensitive information isn't exposed.
+- **Kubernetes Secrets:** Database credentials are stored securely in base64-encoded Kubernetes secrets.
+- **Git and Docker Ignorance:** .gitignore and .dockerignore files prevent sensitive or unnecessary files from being tracked or added to Docker images.
+- **SSL ( HTTPS ):** SSL encryption is enabled to secure data transmission, ensuring that all communications are encrypted.
 
 ---
 
 ## 🔄 Application Flow  
 
-Below is a high-level overview of how the Flask Catexer app functions from development to deployment:  
+Below is a high-level overview of how the flask app functions from development to deployment:  
 
-1. **Development**: Developers work on the Flask application locally and test it using Docker Compose.  
+1. **Development**: Developers work on the Flask application locally and can test it using Docker Compose.  
 2. **CI/CD Pipeline**:  
    - Code is pushed to GitHub.  
    - GitHub Actions trigger a build process.  
-   - The Flask application is built as a Docker image and pushed to Docker Hub.  
+   - The Flask application is built as a Docker image and pushed to Docker Hub.
+   - A test is executed using Docker Compose to verify that the updated code doesn’t break the application's functionality.
 3. **Kubernetes Deployment**:  
    - The latest Docker image is pulled from Docker Hub.  
    - Helm deploys the application to the GKE cluster.  
    - Kubernetes ensures high availability and manages scaling.  
-4. **Monitoring**:  
+4. **Monitoring & Logging**:  
    - The application exposes **Prometheus-compatible metrics**.  
-   - Prometheus scrapes the metrics, providing real-time insights.  
+   - Prometheus scrapes the metrics, providing real-time insights, showed later by grafana.
+   - Loki collects and aggregates logs, offering seamless log monitoring. 
 5. **Automatic Updates & Rollbacks**:  
    - When new code is pushed, the CI/CD pipeline rebuilds the Docker image and updates the deployment via Helm.  
    - If issues occur, previous versions can be rolled back using Helm.  
 
-This flow ensures a **fully automated, scalable, and monitored deployment** of the Flask Catexer app in a **Kubernetes cluster on Google Cloud**.  
+This flow ensures a **fully automated, scalable, and monitored deployment** of the flask app in the **Kubernetes cluster on GCP**.  
 
 ---
 
@@ -243,7 +226,7 @@ Over time, multiple Docker images can accumulate in **Docker Hub**, leading to u
 To execute the cleanup script:  
 
 ```sh
-bash cleanups/docker-hub-cleanup.sh
+bash cleanups/docker-clean.sh
 ```
 
 Ensure you have **Docker Hub credentials** set up to authenticate with the Docker API before running the script.  
@@ -254,16 +237,17 @@ Helm charts used for deploying the application are stored in a **Helm repository
 
 To clean up old Helm chart versions, a **bash script is provided in the `cleanups/` directory**. This script:  
 
-- Fetches a list of all Helm chart versions stored in the GitHub Pages repo.  
-- Identifies older versions based on a retention policy (e.g., keep only the latest N versions).  
-- Removes outdated charts to free up space while ensuring recent versions remain available for deployments.  
+- **Clones the GitHub Pages Helm repository:** fetches a local copy of the repo to make changes.
+- **Restores original modification times:** it ensures the files retain their original modification times, keeping the history intact even after cloning.
+- **Identifies and deletes older versions:** The script lists all .tgz files (Helm chart archives) in the repository, sorts them by their age,
+   and removes the oldest versions while preserving the latest N versions (default is 3).
+- **Pushes changes:** commits and pushes the changes to the GitHub Pages repository, ensuring the cleanup is reflected in the live repository.  
 
 To execute the Helm chart cleanup script:  
 
 ```sh
-bash cleanups/helm-repo-cleanup.sh
+bash cleanups/helm-clean.sh
 ```
 
-This helps maintain a **lean and organized Helm repository** while ensuring that deployments always use the most recent stable versions of the charts.  
-
+This process helps you maintain a clean and organized Helm repository, ensuring that only the most recent and relevant chart versions are stored and available for deployments.
 ---
