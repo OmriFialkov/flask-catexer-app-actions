@@ -30,9 +30,6 @@ kube-prometheus-stack:
       type: ClusterIP
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false
-      serviceMonitorNamespaceSelector:
-        matchNames:
-          - monitor  # Only watch ServiceMonitors in the "monitor" namespace
       serviceMonitorSelector: {}
 
 
