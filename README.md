@@ -6,13 +6,15 @@ This project presents a **flask-based dockerized web-app** integrated in GitHub 
 ### Features
 - **Flask Web Application**: A lightweight Python web app.
 - **GitHub Actions CI/CD**: Automated building, testing and deployment.
+- **MySQL Database:** The primary database for storing and managing structured data efficiently.
 - **Docker Support**: Containerized for easy deployment.
 - **Cloud Integration**: Ready for deployment to AWS/GCP.
-- **Infrastructure as Code**: Terraform for cloud provisioning and Helm for Kubernetes deployment.
+- **Infrastructure as Code**: Terraform for cloud provisioning - a GKE cluster
+-  **Kubernetes Deployment:** The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments.
 - **Monitoring & Logging**: Integrated Prometheus, Grafana, and Loki for observability -
   - **Prometheus**: Collects application and infrastructure metrics.
   - **Grafana**: Visualizes data through dashboards.
-  - **Loki**: Collects and stores logs for easy querying and analysis. mysql k8s and how to use yourself and breakdown and all.
+  - **Loki**: Collects and stores logs for easy querying and analysis.
 
 ---
 ## Project Flow Chart
