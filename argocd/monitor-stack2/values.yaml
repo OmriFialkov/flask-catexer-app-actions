@@ -1,36 +1,15 @@
-kube-prometheus-stack:
-  prometheusOperator:
-    enabled: true
-  # Disable all unnecessary components
-  alertmanager:
-    enabled: false  # Disable Alertmanager
-  grafana:
-    enabled: false  # Disable Grafana
-  kubeControllerManager:
-    enabled: false  # Disable Kubernetes Controller Manager monitoring
-  kubeScheduler:
-    enabled: false  # Disable Kubernetes Scheduler monitoring
-  kubeEtcd:
-    enabled: false  # Disable etcd monitoring
-  kubeStateMetrics:
-    enabled: false  # Disable Kube State Metrics
-  nodeExporter:
-    enabled: false  # Disable Node Exporter
-  coreDns:
-    enabled: false  # Disable CoreDNS monitoring
-  kubeApiServer:
-    enabled: false  # Disable Kubernetes API server monitoring
-  kubelet:
-    enabled: false  # Disable Kubelet monitoring
-
-  # Enable Prometheus and the Prometheus Operator
-  prometheus:
-    enabled: true
-    service:
-      type: ClusterIP
-    prometheusSpec:
-      serviceMonitorSelectorNilUsesHelmValues: false
-      serviceMonitorSelector: {}
+prometheus:
+  prometheusSpec:
+    serviceMonitorNamespaceSelector:
+      matchNames:
+        - monitor
+    serviceMonitorSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+  service:
+    type: ClusterIP
+  server:
+    persistentVolume:
+      enabled: false  # Disable PV for simplicity
 
 
 grafana:
