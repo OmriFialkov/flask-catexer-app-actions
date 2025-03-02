@@ -1,14 +1,7 @@
-prometheus-operator:
-  enabled: true
-  prometheus:
+kube-prometheus-stack:
+  prometheusOperator:
     enabled: true
-    service:
-      type: ClusterIP
-    prometheusSpec:
-      serviceMonitorNamespaceSelector:
-        matchNames:
-          - monitor
-      serviceMonitorSelector: {}
+  # Disable all unnecessary components
   alertmanager:
     enabled: false  # Disable Alertmanager
   grafana:
@@ -30,6 +23,18 @@ prometheus-operator:
   kubelet:
     enabled: false  # Disable Kubelet monitoring
 
+  # Enable Prometheus and the Prometheus Operator
+  prometheus:
+    enabled: true
+    service:
+      type: ClusterIP
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorNamespaceSelector:
+        matchNames:
+          - monitor  # Only watch ServiceMonitors in the "monitor" namespace
+      serviceMonitorSelector: {}
+
 
 grafana:
   grafana.ini:
@@ -45,7 +50,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: http://monitor-stack-prometheus-operator-prometheus.monitor.svc.cluster.local:9090  # Update if needed
+          url: http://monitor-stack-kube-prometheus-prometheus.monitor.svc.cluster.local:9090  # Update if needed
           access: proxy
           isDefault: true
         - name: loki-auto
