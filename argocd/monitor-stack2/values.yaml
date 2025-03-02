@@ -33,3 +33,8 @@ grafana:
           isDefault: false
           jsonData:
             maxLines: 1000
+  sidecar:
+    dashboards:
+      enabled: true        # Enable the sidecar that automatically imports dashboards
+      label: grafana_dashboard  # Specify the label that the sidecar will use to pick up dashboards
+      label_value: "1"     
