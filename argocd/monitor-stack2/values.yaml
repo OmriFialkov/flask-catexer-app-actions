@@ -15,9 +15,6 @@ prometheus:
           - source_labels: [__meta_kubernetes_service_label_app]
             action: keep
             regex: flask-app  # Match the label of your Flask app service
-          - source_labels: [__meta_kubernetes_service_name]
-            action: keep
-            regex: flask-app-service  # Match the name of your Flask app service
           - source_labels: [__meta_kubernetes_endpoint_port_name]
             action: keep
             regex: http  # Match the port name of your Flask app service
