@@ -5,9 +5,9 @@ type: application
 version: 0.1.0
 
 dependencies:
-  - name: kube-prometheus
-    version: 8.0.0  # Use the latest version from Bitnami
-    repository: https://charts.bitnami.com/bitnami
+  - name: prometheus-operator
+    version: 9.3.1
+    repository: https://prometheus-community.github.io/helm-charts
   - name: grafana
     version: 7.3.6
     repository: https://grafana.github.io/helm-charts

@@ -1,4 +1,4 @@
-kube-prometheus:
+prometheus-operator:
   enabled: true
   prometheus:
     enabled: true
@@ -45,7 +45,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: http://monitor-stack-kube-prometheus-prometheus.monitor.svc.cluster.local:9090  # Update if needed
+          url: http://monitor-stack-prometheus-operator-prometheus.monitor.svc.cluster.local:9090  # Update if needed
           access: proxy
           isDefault: true
         - name: loki-auto
