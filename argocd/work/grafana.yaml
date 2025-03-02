@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: grafana
+    targetRevision: 7.3.6  # Use the latest version from Helm repository
+    helm:
+      values: |
+        service:
+          type: ClusterIP
+        persistence:
+          enabled: false  # Disable PV for simplicity (change if needed)
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Prometheus
+                type: prometheus
+                url: http://prometheus-server.monitor.svc.cluster.local  # Update if needed
+                access: proxy
+                isDefault: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitor  # Same namespace as Prometheus
+  syncPolicy:
+    automated: null

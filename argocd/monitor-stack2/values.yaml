@@ -1,0 +1,21 @@
+prometheus:
+  service:
+    type: ClusterIP
+  server:
+    persistentVolume:
+      enabled: false  # Disable PV for simplicity
+
+grafana:
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: false  # Disable PV for simplicity
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-server.monitor.svc.cluster.local  # Update if needed
+          access: proxy
+          isDefault: true

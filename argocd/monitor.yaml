@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitor-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
+    targetRevision: main
+    path: argocd/monitor-stack2  # Path to the umbrella chart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitor  # Ensure Prometheus and Grafana are in the same namespace
+  syncPolicy:
+    automated: null

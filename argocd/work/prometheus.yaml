@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus
+    targetRevision: 25.8.0  # Use the latest version from Helm repository
+    helm:
+      values: |
+        service:
+          type: ClusterIP
+        server:
+          persistentVolume:
+            enabled: false  # Disable PV for simplicity (change if needed)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitor  # Adjust namespace if needed
+  syncPolicy:
+    automated: null
