@@ -21,6 +21,17 @@ prometheus:
         metrics_path: /metrics  # The Flask metrics endpoint
         scheme: http  # Use http (or https if your app uses TLS)
         scrape_interval: 15s  # Scrape every 15 seconds (adjust as needed)
+  
+      # Ensure the default Prometheus jobs are included
+      - job_name: prometheus
+        static_configs:
+          - targets:
+              - localhost:9090
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+      - job_name: kubernetes-apiservers
+        kubernetes_sd_configs:
+          - role: endpoints
 
 
 grafana:
