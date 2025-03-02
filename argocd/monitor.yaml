@@ -14,3 +14,5 @@ spec:
     namespace: monitor  # Ensure Prometheus and Grafana are in the same namespace
   syncPolicy:
     automated: null
+    syncOptions:
+      - prune=true
