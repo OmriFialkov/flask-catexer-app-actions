@@ -5,8 +5,8 @@ type: application
 version: 0.1.0
 
 dependencies:
-  - name: prometheus-operator
-    version: 9.0.0  # Use the latest version from Bitnami
+  - name: kube-prometheus
+    version: 8.0.0  # Use the latest version from Bitnami
     repository: https://charts.bitnami.com/bitnami
   - name: grafana
     version: 7.3.6

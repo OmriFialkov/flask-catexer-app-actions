@@ -1,4 +1,4 @@
-prometheus-operator:
+kube-prometheus:
   enabled: true
   prometheus:
     enabled: true
@@ -30,6 +30,7 @@ prometheus-operator:
   kubelet:
     enabled: false  # Disable Kubelet monitoring
 
+
 grafana:
   grafana.ini:
     date_format:
@@ -44,7 +45,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
-          url: http://prometheus-server.monitor.svc.cluster.local  # Update if needed
+          url: http://monitor-stack-kube-prometheus-prometheus.monitor.svc.cluster.local:9090  # Update if needed
           access: proxy
           isDefault: true
         - name: loki-auto
