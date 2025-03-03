@@ -353,7 +353,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "flask_app_visitor_count{service=\"flask-app-service\"}",
+              "expr": "flask_app_visitor_count{job=\"flask-app\"}",
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" }
             }
@@ -375,7 +375,7 @@ data:
           "type": "gauge",
           "targets": [
             {
-              "expr": "avg(flask_app_visitor_count{service=\"flask-app-service\"})",
+              "expr": "avg(flask_app_visitor_count{job=\"flask-app\"})",
               "refId": "B",
               "datasource": { "type": "prometheus", "uid": "prometheus" }
             }
@@ -392,7 +392,7 @@ data:
           "type": "gauge",
           "targets": [
             {
-              "expr": "sum(flask_http_request_total{service=\"flask-app-service\"})",
+              "expr": "sum(flask_http_request_total{job=\"flask-app\"})",
               "refId": "C",
               "datasource": { "type": "prometheus", "uid": "prometheus" }
             }
