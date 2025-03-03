@@ -37,6 +37,7 @@ grafana:
       datasources:
         - name: Prometheus
           type: prometheus
+          id: prometheus
           url: http://monitor-stack-prometheus-server.monitor.svc.cluster.local  # Update if needed
           access: proxy
           isDefault: true
