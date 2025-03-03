@@ -11,3 +11,6 @@ dependencies:
   - name: grafana
     version: 7.3.6
     repository: https://grafana.github.io/helm-charts
+  - name: custom-resources
+    version: "0.1.0"
+    repository: "file://charts/custom-resources"

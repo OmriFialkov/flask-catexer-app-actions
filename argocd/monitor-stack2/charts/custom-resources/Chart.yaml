@@ -1,0 +1,5 @@
+apiVersion: v2
+name: custom-resources
+description: A Helm chart for Kubernetes monitoring custom resources
+type: application
+version: 0.1.0
