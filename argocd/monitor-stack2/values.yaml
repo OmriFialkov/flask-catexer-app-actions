@@ -1,27 +1,26 @@
 prometheus:
+  extraScrapeConfigs:
+    - job_name: 'flask-app'
+      kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+              - default
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_label_app]
+          action: keep
+          regex: flask-app
+        - source_labels: [__meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: http
+      metrics_path: /metrics
+      scheme: http
   service:
     type: ClusterIP
   server:
     persistentVolume:
       enabled: false  # Disable PV for simplicity
-    serverFiles:
-      prometheus.yml:
-        scrape_configs:
-          - job_name: 'flask-app'
-            kubernetes_sd_configs:
-              - role: endpoints
-                namespaces:
-                  names:
-                    - default
-            relabel_configs:
-              - source_labels: [__meta_kubernetes_service_label_app]
-                action: keep
-                regex: flask-app
-              - source_labels: [__meta_kubernetes_endpoint_port_name]
-                action: keep
-                regex: http
-            metrics_path: /metrics
-            scheme: http
+
 
 
 grafana:
