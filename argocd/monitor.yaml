@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
     targetRevision: main
-    path: argocd/monitor-stack2  # Path to the umbrella chart
+    path: argocd/monitor-stack-argo  # Path to the umbrella chart
   destination:
     server: https://kubernetes.default.svc
     namespace: monitor  # Ensure Prometheus and Grafana are in the same namespace

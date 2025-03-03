@@ -24,6 +24,7 @@ prometheus:
 
 
 grafana:
+  adminPassword: "admin"
   grafana.ini:
     date_format:
       default_timezone: "browser"
