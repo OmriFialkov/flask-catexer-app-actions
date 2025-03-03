@@ -1,5 +1,5 @@
 prometheus:
-  extraScrapeConfigs:
+  extraScrapeConfigs: |
     - job_name: 'flask-app'
       kubernetes_sd_configs:
         - role: endpoints
