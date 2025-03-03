@@ -147,9 +147,185 @@ jobs:
           git commit -m "Updated helm chart version from APP REPO TRIGGER - Version 0.0.${{ github.run_number }}"
           git push origin main
           echo "pushed updated helm chart to helm-repo"
-  CD:
+
+# Helm CD - Final Project:          
+
+  # CD:
+  #   runs-on: ubuntu-latest
+  #   needs: "Build-Test" # run only after this job is successful - if failed - won't run.
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: setup Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with: 
+  #         terraform_wrapper: false 
+
+  #     - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1
+
+  #     - name: Setup google cloud service account credentials # env configuring for terraform commands.
+  #       run: | 
+  #         echo '${{ secrets.GCP_SA_KEY }}' | base64 --decode > /tmp/key.json
+  #         echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json" >> $GITHUB_ENV
+
+  #     - name: Install gcloud CLI # for cli commands
+  #       uses: google-github-actions/setup-gcloud@v1
+
+  #     - name: login to gcloud # using service account as a credential to login to gcloud cli.
+  #       run: |
+  #         gcloud auth activate-service-account --key-file=/tmp/key.json
+
+  #     - name: verify gcloud login # debug.
+  #       run: |
+  #         set -x
+  #         gcloud auth list
+          
+  #     - name: Terraform Init
+  #       run: |
+  #         cd google-k8s
+  #         terraform init
+
+  #     - name: Terraform Apply # update cluster infrastructure.
+  #       run: |
+  #         cd google-k8s
+  #         terraform apply -auto-approve
+
+  #     - name: Install Helm
+  #       run: |
+  #           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  #           helm version
+
+  #     - name: Add and Update Helm Repository
+  #       run: |
+  #           echo "$GITHUB_WORKSPACE"
+  #           helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
+  #           helm repo update
+  #           helm search repo flaskrepo --versions
+
+  #     - name: install GKE google plugin # a must install google plugin to connect to gke cluster
+  #       run: |
+  #           gcloud components install gke-gcloud-auth-plugin
+
+  #     - name: List GKE Clusters # debug.
+  #       run: |
+  #           gcloud container clusters list --project ${{ secrets.GCP_PROJECT_ID }}
+          
+  #     - name: Set GKE Context to connect to cluster # runner is connecting to cluster.
+  #       run: |
+  #           gcloud container clusters get-credentials \
+  #             ${{ secrets.GCP_CLUSTER_NAME }} \
+  #             --project ${{ secrets.GCP_PROJECT_ID }} \
+  #             --zone ${{ secrets.GCP_ZONE }}
+
+  #     - name: Deploy Flask App Using Helm # Updating Release and App-Image (older with --set flag)
+  #       run: |
+  #         set -ex
+  #         echo "IMAGE_TAG=${IMAGE_TAG}"
+  #         helm upgrade --install release flaskrepo/helm-flask
+  #         helm list
+
+  #     - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode, upgrade can be from values.yaml or published chart itself. ( this script can update both subcharts automatically - except from local chart version increment and kube-prometheus-stack remote files like default values.yaml )
+  #       run: | # works, tested, helm list in the end to make sure whether upgrade took place or not - will go up a revision even if it did not actually upgraded something but the command succeeded, not urgent to upgrade this helm chart separately with triggers.
+  #         set -x
+  #         echo "checking if a conflicting monitoring release exists already in cluster by other release name and cannot be managed.."
+          
+  #         existing_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("monitor-stack")) | .name')
+          
+  #         if [[ -n "$existing_release" && "$existing_release" != "my-monitoring" ]]; then
+  #           echo "monitor stack already running under release $existing_release, please rename manually to be managed by this workflow."
+          
+  #         elif [[ -n "$existing_release" && "$existing_release" == "my-monitoring" ]] || [[ -z "$existing_release" ]]; then
+  #           echo "no conflicting monitoring release exists in cluster, will install / upgrade my-monitoring release"
+
+  #           cd charts/monitor-stack/
+  #           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  #           helm dependency update .
+
+  #           if helm list -n monitor | grep -iq "my-monitoring"; then
+  #             echo "release found, will upgrade"
+
+  #             last_revision=$(helm history my-monitoring -n monitor --max 1 | awk 'NR==2 {print $1}')
+  #             echo "last revision is $last_revision - debugging"
+
+  #             if ! helm upgrade my-monitoring . -n monitor; then
+  #               echo "upgrade may have failed - initializing rollback and exiting"
+  #               helm rollback my-monitoring $last_revision -n monitor
+  #               exit 1
+  #             fi
+
+  #             echo "upgrade successful"
+
+  #           else
+  #             echo "release not found, will install"
+
+
+  #             if ! helm install my-monitoring . -n monitor; then
+  #               echo "install may have failed - initializing cleanup and exiting"
+  #               helm uninstall my-monitoring -n monitor
+  #               exit 1
+  #             fi
+
+  #             echo "install successful"
+
+  #           fi 
+
+  #           helm status my-monitoring -n monitor
+            
+  #         fi
+    
+
+  #     - name: Verify Logging Stack Is Up & Running # for local subchart files - will be updated with helm upgrade only - sufficient.
+  #       run: |
+  #         set -x
+  #         echo "checking if a conflicting loki-stack release exists already in cluster by other release name and cannot be managed.."
+
+  #         existing_loki_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("loki-stack")) | .name')
+
+  #         if [[ -n "$existing_loki_release" && "$existing_loki_release" != "loki" ]]; then
+  #           echo "loki stack already running under release $existing_loki_release, please rename manually to be managed by this workflow."
+          
+  #         elif [[ -n "$existing_loki_release" && "$existing_loki_release" == "loki" ]]; then
+  #           echo "upgrading managed-existing loki stack release.."
+  #           helm repo add grafana https://grafana.github.io/helm-charts
+  #           cd charts/log/
+  #           helm upgrade loki grafana/loki-stack \
+  #            -n log -f loki-values.yaml
+            
+  #           helm list -n log
+  #           if helm status loki -n log | grep -iq "deployed"; then
+  #             echo "loki upgrade successful"
+  #           else
+  #             echo "loki upgrade may have failed"
+  #             exit 1
+  #           fi
+
+  #         else
+  #           echo "loki stack release does not exist, installing under name loki.." 
+  #           cd charts/log/ 
+  #           helm repo add grafana https://grafana.github.io/helm-charts
+  #           helm install loki grafana/loki-stack \
+  #            -n log -f loki-values.yaml
+
+  #           kubectl get pods -n log
+  #           if helm status loki -n log | grep -iq "deployed"; then
+  #             echo "loki install successful"
+  #           else
+  #             echo "loki install may have failed"
+  #             exit 1
+  #           fi
+  #         fi
+
+# Bonus - argocd CD
+
+  CD-argocd:
     runs-on: ubuntu-latest
-    needs: "Build-Test" # run only after this job is successful - if failed - won't run.
+    needs: "Build-Test"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -159,7 +335,7 @@ jobs:
         with: 
           terraform_wrapper: false 
 
-      - name: Configure AWS Credentials # for s3 tf remote state - accessing s3 bucket.
+      - name: Configure AWS Credentials # for tf backend
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -177,11 +353,6 @@ jobs:
       - name: login to gcloud # using service account as a credential to login to gcloud cli.
         run: |
           gcloud auth activate-service-account --key-file=/tmp/key.json
-
-      - name: verify gcloud login # debug.
-        run: |
-          set -x
-          gcloud auth list
           
       - name: Terraform Init
         run: |
@@ -193,25 +364,9 @@ jobs:
           cd google-k8s
           terraform apply -auto-approve
 
-      - name: Install Helm
-        run: |
-            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-            helm version
-
-      - name: Add and Update Helm Repository
-        run: |
-            echo "$GITHUB_WORKSPACE"
-            helm repo add flaskrepo https://omrifialkov.github.io/helm-flaskgif
-            helm repo update
-            helm search repo flaskrepo --versions
-
       - name: install GKE google plugin # a must install google plugin to connect to gke cluster
         run: |
             gcloud components install gke-gcloud-auth-plugin
-
-      - name: List GKE Clusters # debug.
-        run: |
-            gcloud container clusters list --project ${{ secrets.GCP_PROJECT_ID }}
           
       - name: Set GKE Context to connect to cluster # runner is connecting to cluster.
         run: |
@@ -220,100 +375,24 @@ jobs:
               --project ${{ secrets.GCP_PROJECT_ID }} \
               --zone ${{ secrets.GCP_ZONE }}
 
-      - name: Deploy Flask App Using Helm # Updating Release and App-Image (older with --set flag)
+      - name: Install Helm
         run: |
-          set -ex
-          echo "IMAGE_TAG=${IMAGE_TAG}"
-          helm upgrade --install release flaskrepo/helm-flask
-          helm list
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            helm version
 
-      - name: Verify Monitor Stack Is Up & Running # -q on grep is quiet mode, upgrade can be from values.yaml or published chart itself. ( this script can update both subcharts automatically - except from local chart version increment and kube-prometheus-stack remote files like default values.yaml )
-        run: | # works, tested, helm list in the end to make sure whether upgrade took place or not - will go up a revision even if it did not actually upgraded something but the command succeeded, not urgent to upgrade this helm chart separately with triggers.
-          set -x
-          echo "checking if a conflicting monitoring release exists already in cluster by other release name and cannot be managed.."
-          
-          existing_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("monitor-stack")) | .name')
-          
-          if [[ -n "$existing_release" && "$existing_release" != "my-monitoring" ]]; then
-            echo "monitor stack already running under release $existing_release, please rename manually to be managed by this workflow."
-          
-          elif [[ -n "$existing_release" && "$existing_release" == "my-monitoring" ]] || [[ -z "$existing_release" ]]; then
-            echo "no conflicting monitoring release exists in cluster, will install / upgrade my-monitoring release"
-
-            cd charts/monitor-stack/
-            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-            helm dependency update .
-
-            if helm list -n monitor | grep -iq "my-monitoring"; then
-              echo "release found, will upgrade"
-
-              last_revision=$(helm history my-monitoring -n monitor --max 1 | awk 'NR==2 {print $1}')
-              echo "last revision is $last_revision - debugging"
-
-              if ! helm upgrade my-monitoring . -n monitor; then
-                echo "upgrade may have failed - initializing rollback and exiting"
-                helm rollback my-monitoring $last_revision -n monitor
-                exit 1
-              fi
-
-              echo "upgrade successful"
-
-            else
-              echo "release not found, will install"
-
-
-              if ! helm install my-monitoring . -n monitor; then
-                echo "install may have failed - initializing cleanup and exiting"
-                helm uninstall my-monitoring -n monitor
-                exit 1
-              fi
-
-              echo "install successful"
-
-            fi 
-
-            helm status my-monitoring -n monitor
-            
-          fi
-    
-
-      - name: Verify Logging Stack Is Up & Running # for local subchart files - will be updated with helm upgrade only - sufficient.
+      - name: Install ArgoCD
         run: |
-          set -x
-          echo "checking if a conflicting loki-stack release exists already in cluster by other release name and cannot be managed.."
+                helm repo add argo https://argoproj.github.io/argo-helm
 
-          existing_loki_release=$(helm list -A -o json | jq -r '.[] | select(.chart | startswith("loki-stack")) | .name')
+                if helm status argocd -n argocd >/dev/null 2>&1; then
+                  echo "ArgoCD is already installed in the argocd namespace."
+                else
+                  echo "ArgoCD is not installed. Proceeding with installation."
+                  helm install argocd argo/argo-cd -n argocd \
+                    --set argo-cd.configs.secret.argocdServerAdminPassword="admin"
+                fi
 
-          if [[ -n "$existing_loki_release" && "$existing_loki_release" != "loki" ]]; then
-            echo "loki stack already running under release $existing_loki_release, please rename manually to be managed by this workflow."
-          
-          elif [[ -n "$existing_loki_release" && "$existing_loki_release" == "loki" ]]; then
-            echo "upgrading managed-existing loki stack release.."
-            helm repo add grafana https://grafana.github.io/helm-charts
-            cd charts/log/
-            helm upgrade loki grafana/loki-stack \
-             -n log -f loki-values.yaml
-            
-            helm list -n log
-            if helm status loki -n log | grep -iq "deployed"; then
-              echo "loki upgrade successful"
-            else
-              echo "loki upgrade may have failed"
-              exit 1
-            fi
-
-          else
-            echo "loki stack release does not exist, installing under name loki.." 
-            cd charts/log/ 
-            helm repo add grafana https://grafana.github.io/helm-charts
-            helm install loki grafana/loki-stack \
-             -n log -f loki-values.yaml
-
-            kubectl get pods -n log
-            if helm status loki -n log | grep -iq "deployed"; then
-              echo "loki install successful"
-            else
-              echo "loki install may have failed"
-              exit 1
-            fi
-          fi
+      - name: install apps # app of apps - to continue now
+        run: |
+          cd argocd
+          kubectl apply -f argocd-apps/
