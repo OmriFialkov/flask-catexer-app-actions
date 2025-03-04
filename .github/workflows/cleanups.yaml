@@ -1,7 +1,7 @@
 name: cleanups
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # should add automatically in the future...
 
 env:
     DOCKERTOKEN: ${{ secrets.DOCKERTOKEN }}
