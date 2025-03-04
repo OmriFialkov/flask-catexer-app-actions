@@ -77,6 +77,9 @@ jobs:
             kubectl create namespace log
             kubectl create namespace monitor
 
+            kubectl delete clusterrolebinding loki-promtail || true
+            kubectl delete clusterrole loki-promtail || true
+
             kubectl delete all --all
             kubectl delete configmap -l argocd.argoproj.io/instance=flask-app || true
             kubectl delete secret -l argocd.argoproj.io/instance=flask-app || true

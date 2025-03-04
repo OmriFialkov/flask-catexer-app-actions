@@ -11,10 +11,10 @@ spec:
     chart: loki-stack  # Chart name for Loki in the repository
     helm:
       valueFiles:
-        - https://raw.githubusercontent.com/OmriFialkov/flask-catexer-app-actions/refs/heads/main/argocd/log/loki-values.yaml  # Override values for Loki from your custom values.yaml
+        - https://raw.githubusercontent.com/OmriFialkov/ArgoCD-Charts/refs/heads/main/log/loki-values.yaml
   destination:
     server: https://kubernetes.default.svc  # The Kubernetes API server URL
     namespace: log  # Target namespace for the Loki app
   syncPolicy:
     automated:
-      selfHeal: true # Set to 'null' for manual sync
+     # Set to 'null' for manual sync

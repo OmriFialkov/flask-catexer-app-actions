@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default  # Argo CD project; 'default' is commonly used
   source:
-    repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions # URL of your GitHub repository
+    repoURL: https://github.com/OmriFialkov/ArgoCD-Charts # URL of your GitHub repository
     targetRevision: main  # Branch to track; use the appropriate branch name
-    path: argocd/helm-flask  # Path to the directory containing Chart.yaml
+    path: helm-flask  # Path to the directory containing Chart.yaml
   destination:
     server: https://kubernetes.default.svc  # use default if working on one cluster - application and argo cd.
     namespace: default  # Namespace where the application will be deployed
