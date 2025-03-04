@@ -38,7 +38,7 @@ jobs:
               --project ${{ secrets.GCP_PROJECT_ID }} \
               --zone ${{ secrets.GCP_ZONE }}
 
-      - name: Cleanup Helm / ArgoCD Deployments
+      - name: Cleanup Helm / ArgoCD Deployments # in future do cascade delete with argocd cli to app-of-apps.
         run: |
           set -x  # enable debugging
           
@@ -67,15 +67,19 @@ jobs:
           elif kubectl get application -n argocd | grep -i "flask-app\|monitor-stack\|loki"; then
             echo "ArgoCD applications found. Cleaning up..."
 
-            kubectl delete application app-of-apps -n argocd
+            kubectl delete application app-of-apps -n argocd || true
+            kubectl delete application flask-app -n argocd || true
+            kubectl delete application monitor-stack -n argocd || true
+            kubectl delete application loki -n argocd || true
+
             kubectl delete namespace monitor 
             kubectl delete namespace log
             kubectl create namespace log
             kubectl create namespace monitor
 
             kubectl delete all --all
-            kubectl delete configmap -l argocd.argoproj.io/instance=flask-app
-            kubectl delete secret -l argocd.argoproj.io/instance=flask-app
+            kubectl delete configmap -l argocd.argoproj.io/instance=flask-app || true
+            kubectl delete secret -l argocd.argoproj.io/instance=flask-app || true
 
           else
             echo "No Helm releases or ArgoCD applications found to clean up."
