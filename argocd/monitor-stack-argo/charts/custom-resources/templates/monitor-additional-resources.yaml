@@ -375,7 +375,7 @@ data:
           "type": "gauge",
           "targets": [
             {
-              "expr": "avg(flask_app_visitor_count{job=\"flask-app\"})",
+              "expr": "max(flask_app_visitor_count{job=\"flask-app\"})",
               "refId": "B",
               "datasource": { "type": "prometheus", "uid": "prometheus" }
             }
