@@ -17,4 +17,5 @@ spec:
     namespace: log  # Target namespace for the Loki app
   syncPolicy:
     automated:
+      selfHeal: true
      # Set to 'null' for manual sync
