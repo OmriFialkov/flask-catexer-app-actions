@@ -38,29 +38,45 @@ jobs:
               --project ${{ secrets.GCP_PROJECT_ID }} \
               --zone ${{ secrets.GCP_ZONE }}
 
-      - name: Cleanup Helm Releases
+      - name: Cleanup Helm / ArgoCD Deployments
         run: |
           set -x  # enable debugging
           
-          cleanup_helm_release() {
-            
-            release=$1
-            namespace=$2
-            
-            echo "Checking status of Helm release '$release' in namespace '$namespace'..."
-            
-            if helm status "$release" -n "$namespace"; then
-              echo "Release '$release' found. Deleting..."
-              helm uninstall "$release" -n "$namespace"
-              echo "Successfully deleted Helm release '$release' in namespace '$namespace'."
-            else
-              echo "Helm release '$release' not found in namespace '$namespace'. Skipping."
-            fi
-          }
+          if helm list -A | grep -i "release\|loki\|my-monitoring"; then
+            echo "Helm releases found. Cleaning up..."
+            cleanup_helm_release() {
+              
+              release=$1
+              namespace=$2
+              
+              echo "Checking status of Helm release '$release' in namespace '$namespace'..."
+              
+              if helm status "$release" -n "$namespace"; then
+                echo "Release '$release' found. Deleting..."
+                helm uninstall "$release" -n "$namespace"
+                echo "Successfully deleted Helm release '$release' in namespace '$namespace'."
+              else
+                echo "Helm release '$release' not found in namespace '$namespace'. Skipping."
+              fi
+            }
 
-          cleanup_helm_release "release" "default"
-          cleanup_helm_release "loki" "log"
-          cleanup_helm_release "my-monitoring" "monitor"
+            cleanup_helm_release "release" "default"
+            cleanup_helm_release "loki" "log"
+            cleanup_helm_release "my-monitoring" "monitor"
 
-      #- name: Cleanup ArgoCD Deployments
+          elif kubectl get application -n argocd | grep -i "flask-app\|monitor-stack\|loki"; then
+            echo "ArgoCD applications found. Cleaning up..."
 
+            kubectl delete application app-of-apps -n argocd
+            kubectl delete namespace monitor 
+            kubectl delete namespace log
+            kubectl create namespace log
+            kubectl create namespace monitor
+
+            kubectl delete all --all
+            kubectl delete configmap -l argocd.argoproj.io/instance=flask-app
+            kubectl delete secret -l argocd.argoproj.io/instance=flask-app
+
+          else
+            echo "No Helm releases or ArgoCD applications found to clean up."
+          fi
