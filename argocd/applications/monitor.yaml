@@ -13,4 +13,6 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitor  # Ensure Prometheus and Grafana are in the same namespace
   syncPolicy:
-    automated: null # prune true in ui must be true - manually check.
+    automated:
+      prune: true # prune true in ui must be true - manually check.
+      selfHeal: true

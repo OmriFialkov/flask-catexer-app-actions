@@ -13,4 +13,5 @@ spec:
     server: https://kubernetes.default.svc  # use default if working on one cluster - application and argo cd.
     namespace: default  # Namespace where the application will be deployed
   syncPolicy:
-    automated: null  # Set to 'null' for manual sync; use '{}' for automated sync
+    automated:
+      selfHeal: true # Set to 'null' for manual sync; use '{}' for automated sync

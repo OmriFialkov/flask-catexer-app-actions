@@ -1,5 +1,5 @@
 prometheus:
-  extraScrapeConfigs: |
+  extraScrapeConfigs: | # took hours, found from official artifact hub default values, with |
     - job_name: 'flask-app'
       kubernetes_sd_configs:
         - role: endpoints

@@ -16,4 +16,5 @@ spec:
     server: https://kubernetes.default.svc  # The Kubernetes API server URL
     namespace: log  # Target namespace for the Loki app
   syncPolicy:
-    automated: null  # Set to 'null' for manual sync
+    automated:
+      selfHeal: true # Set to 'null' for manual sync
