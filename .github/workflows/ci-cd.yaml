@@ -439,8 +439,11 @@ jobs:
         run: |
           echo "updating image tag in argocd/helm-flask/values.yaml file to ${IMAGE_TAG}"
           cd argocd/helm-flask
+          echo "( debug ) current image tag is:"
+          cat ./values.yaml | grep -i "tag"
+          
           sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
-          cat ./values.yaml
+          cat ./values.yaml | grep -i "tag"
 
       - name: APP CI - Update Helm-Flask Chart Version ######
         run: |
