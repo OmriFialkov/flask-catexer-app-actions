@@ -338,9 +338,9 @@ name: ci cd with helm
 on:
   push:
     paths: ########
-      - 'argocd/helm-flask/**'
-      - 'argocd/log/**'
-      - 'argocd/monitor-stack-argo/**'
+      # - 'argocd/helm-flask/**'
+      # - 'argocd/log/**'
+      # - 'argocd/monitor-stack-argo/**'
       - 'app/**'
     branches:
       - main
@@ -473,6 +473,7 @@ jobs:
           rsync -av --delete ./argocd/monitor-stack-argo/ ./argo/monitor-stack-argo/
 
           git status
+          cd argo/
           git add -A
           git commit -m "Updated charts from github actions argo-flow"
           git push origin main
@@ -550,7 +551,6 @@ jobs:
 
       - name: Install Apps # app of apps
         run: |
-          cd argocd
           kubectl apply -f argocd/app-of-apps.yaml
 
     #  kubectl get secret argocd-initial-admin-secret -n argocd \
