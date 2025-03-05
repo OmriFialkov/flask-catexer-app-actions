@@ -472,8 +472,8 @@ jobs:
           rsync -av --delete ./argocd/log/ ./argo/log/
           rsync -av --delete ./argocd/monitor-stack-argo/ ./argo/monitor-stack-argo/
 
-          git status
           cd argo/
+          git status
           git add -A
           git commit -m "Updated charts from github actions argo-flow"
           git push origin main
