@@ -288,7 +288,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: flask-dashboard-omri
+  name: flask-dashboard-omriki
   namespace: monitor  # Ensure this matches Grafana's namespace
   labels:
     grafana_dashboard: "1"
