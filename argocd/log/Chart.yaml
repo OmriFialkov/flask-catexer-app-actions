@@ -1,0 +1,11 @@
+apiVersion: v2
+name: log
+description: A Helm chart for Kubernetes logging as a dependency
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: loki-stack 
+    version: 2.10.1
+    repository: https://grafana.github.io/helm-charts
+

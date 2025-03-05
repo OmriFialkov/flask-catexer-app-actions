@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki  # Name of the Loki application
+  namespace: argocd  # Namespace where ArgoCD is running
+spec:
+  project: default  # ArgoCD project to which this app belongs
+  source:
+    repoURL: https://grafana.github.io/helm-charts  # URL of the external Helm chart repository for Loki
+    targetRevision: "2.10.1"  # You can specify a version or use "latest"
+    chart: loki-stack  # Chart name for Loki in the repository
+    helm:
+      valueFiles: # using loki-values.yaml to override default values.
+        - https://raw.githubusercontent.com/OmriFialkov/ArgoCD-Charts/refs/heads/main/log/loki-values.yaml
+  destination:
+    server: https://kubernetes.default.svc  # The Kubernetes API server URL
+    namespace: log  # Target namespace for the Loki app
+  syncPolicy:
+    automated:
+      selfHeal: true
+     # Set to 'null' for manual sync
