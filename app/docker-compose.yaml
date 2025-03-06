@@ -31,7 +31,7 @@ services:
       - "3308:3306"  # Host's port 3308 maps to container's port 3306
     volumes:
       - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Mount the init.sql file
+      - ../db-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Mount the init.sql file
     networks:
       - flask-network
 

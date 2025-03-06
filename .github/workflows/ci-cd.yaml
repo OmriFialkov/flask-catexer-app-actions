@@ -406,7 +406,7 @@ jobs:
       - name: APP CI - Build Docker Compose Image # no cache anyway - removed --no-cache in build command.
         if: env.APP_MODIFIED == 'true'
         run: |
-            docker compose build
+            docker compose -f app/docker-compose.yaml build
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
   
       - name: APP CI - Push Docker Image # in the end: need to do push after tests. #####
@@ -421,15 +421,15 @@ jobs:
         run: | # running without pulling nor building flask image because it is already built - docker compose reads the same image name by image context.
             ls
             docker images
-            docker compose up -d
+            docker compose -f app/docker-compose.yaml up -d
             sleep 1
-            docker compose ps
+            docker compose -f app/docker-compose.yaml ps
       
       - name: APP CI - Run Tests # another tests in the future.
         if: env.APP_MODIFIED == 'true'
         run: |
             sleep 3
-            docker compose logs
+            docker compose -f app/docker-compose.yaml logs
             echo "port being tested: ${{ env.PORT }}"
             curl -f http://localhost:${{ env.PORT }}
             echo "tests passed.."
@@ -441,7 +441,7 @@ jobs:
           cd argocd/helm-flask
           echo "( debug ) current image tag is:"
           cat ./values.yaml | grep -i "tag"
-          
+
           sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
           cat ./values.yaml | grep -i "tag"
 
@@ -456,11 +456,7 @@ jobs:
             echo "no need to update helm-flask chart version, app dir & flask chart not changed.."
           fi
 
-      - name: install rsync #######
-        run: |
-          sudo apt-get install -y rsync
-
-      - name: Push Updated Charts to GitHub Argo-Repo #######
+      - name: Push Updated Charts to GitHub Argo-Repo ####### rsync tool already installed in github actions latest runners.
         env:
           HELM_REPO_PAT: ${{ secrets.HELM_REPO_PAT }}
         run: |
