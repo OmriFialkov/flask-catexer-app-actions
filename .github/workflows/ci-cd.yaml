@@ -439,11 +439,7 @@ jobs:
         run: |
           echo "updating image tag in argocd/helm-flask/values.yaml file to ${IMAGE_TAG}"
           cd argocd/helm-flask
-          echo "( debug ) current image tag is:"
-          cat ./values.yaml | grep -i "tag"
-
           sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
-          cat ./values.yaml | grep -i "tag"
 
       - name: APP CI - Update Helm-Flask Chart Version ######
         run: |
@@ -455,6 +451,12 @@ jobs:
           else
             echo "no need to update helm-flask chart version, app dir & flask chart not changed.."
           fi
+
+      - name: Debug - Chart.yaml & Values.yaml
+        run: |
+          cd argocd/helm-flask
+          cat ./Chart.yaml
+          cat ./values.yaml
 
       - name: Push Updated Charts to GitHub Argo-Repo ####### rsync tool already installed in github actions latest runners.
         env:

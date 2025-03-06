@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   flask-app:
-    build: . # build from the current directory, dockerfile.
+    build: . # build from the current directory, dockerfile
     container_name: flask
     image: ${IMAGE_NAME:-crazyguy888/catexer-actions}:${IMAGE_TAG:-latest} # to which image docker compose directing to install.
     ports:

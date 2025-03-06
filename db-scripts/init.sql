@@ -21,5 +21,5 @@ CREATE TABLE IF NOT EXISTS visitor_counter (
     count INT NOT NULL DEFAULT 0
 );
 
--- Initialize the counter with a starting value of 0, for more rows add (0), (value of another row).
+-- Initialize the counter with a starting value of 0, for more rows add (0), (value of another row)
 INSERT INTO visitor_counter (count) VALUES (0); 
