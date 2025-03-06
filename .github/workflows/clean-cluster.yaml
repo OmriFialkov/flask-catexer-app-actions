@@ -7,9 +7,6 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
       - name: Setup google cloud service account credentials
         run: | 
           echo '${{ secrets.GCP_SA_KEY }}' | base64 --decode > /tmp/key.json
@@ -21,11 +18,6 @@ jobs:
       - name: login to gcloud # using service account as a credential to login to gcloud cli.
         run: |
           gcloud auth activate-service-account --key-file=/tmp/key.json
-
-      - name: Install Helm
-        run: |
-            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-            helm version
 
       - name: install GKE google plugin
         run: |
@@ -44,6 +36,10 @@ jobs:
           
           if helm list -A | grep -i "release\|loki\|my-monitoring"; then
             echo "Helm releases found. Cleaning up..."
+
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            helm version
+
             cleanup_helm_release() {
               
               release=$1
@@ -67,23 +63,38 @@ jobs:
           elif kubectl get application -n argocd | grep -i "flask-app\|monitor-stack\|loki"; then
             echo "ArgoCD applications found. Cleaning up..."
 
-            kubectl delete application app-of-apps -n argocd || true
-            kubectl delete application flask-app -n argocd || true
-            kubectl delete application monitor-stack -n argocd || true
-            kubectl delete application loki -n argocd || true
+            curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 
-            kubectl delete namespace monitor 
-            kubectl delete namespace log
-            kubectl create namespace log
-            kubectl create namespace monitor
+            pass=$(kubectl -n argocd get secret argocd-initial-admin-secret \
+             -o jsonpath="{.data.password}" | base64 -d)
+            service=$(kubectl get svc -n argocd | grep "argocd-server" | awk '{print $4}')   
 
-            kubectl delete clusterrolebinding loki-promtail || true
-            kubectl delete clusterrole loki-promtail || true
+            argocd login "$service" --username admin --password "$pass" --insecure
+            argocd app delete ---
 
-            kubectl delete all --all
-            kubectl delete configmap -l argocd.argoproj.io/instance=flask-app || true
-            kubectl delete secret -l argocd.argoproj.io/instance=flask-app || true
+            argocd app list
 
           else
             echo "No Helm releases or ArgoCD applications found to clean up."
           fi
+
+
+# helm upgrade --install argocd argo/argo-cd -n argocd --set server.service.type=LoadBalancer
+
+# kubectl delete application app-of-apps -n argocd || true
+# kubectl delete application flask-app -n argocd || true
+# kubectl delete application monitor-stack -n argocd || true
+# kubectl delete application loki -n argocd || true
+
+# kubectl delete namespace monitor 
+# kubectl delete namespace log
+# kubectl create namespace log
+# kubectl create namespace monitor
+
+# kubectl delete clusterrolebinding loki-promtail || true
+# kubectl delete clusterrole loki-promtail || true
+
+# kubectl delete all --all
+# kubectl delete configmap -l argocd.argoproj.io/instance=flask-app || true
+# kubectl delete secret -l argocd.argoproj.io/instance=flask-app || true

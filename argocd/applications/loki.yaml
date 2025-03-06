@@ -15,3 +15,4 @@ spec:
   syncPolicy:
     automated: # Set to 'null' for manual sync
       selfHeal: true
+      prune: true

@@ -106,7 +106,7 @@ jobs:
           cd argocd/helm-flask
           sed -i "s/tag: .*/tag: ${IMAGE_TAG}/g" ./values.yaml
 
-      - name: APP CI - Update Helm-Flask Chart Version ######
+      - name: Update Helm-Flask Chart Version ######
         run: |
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -qi "helm-flask" \
            || [ "$APP_MODIFIED" = "true" ]; then
@@ -141,8 +141,6 @@ jobs:
           git commit -m "Updated charts from github actions argo-flow"
           git push origin main
           echo "pushed updated charts to argocd repo"
-
-# Bonus - argocd CD - done
 
   CD-argocd:
     runs-on: ubuntu-latest
@@ -209,7 +207,8 @@ jobs:
                   echo "ArgoCD is already installed in the argocd namespace."
                 else
                   echo "ArgoCD is not installed. Proceeding with installation."
-                  helm install argocd argo/argo-cd -n argocd
+                  helm install argocd argo/argo-cd -n argocd \
+                   --set server.service.type=LoadBalancer
                 fi
 
       - name: Install Apps # app of apps
