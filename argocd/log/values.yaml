@@ -1,4 +1,4 @@
-loki-stack:
+loki-stack: # can configure values for loki-stack to override and update running loki.
   loki:
     image:
       tag: 2.9.4  # <-- Merged from --set loki.image.tag=2.9.3

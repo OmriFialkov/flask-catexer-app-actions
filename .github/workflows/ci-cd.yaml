@@ -452,12 +452,6 @@ jobs:
             echo "no need to update helm-flask chart version, app dir & flask chart not changed.."
           fi
 
-      - name: Debug - Chart.yaml & Values.yaml
-        run: |
-          cd argocd/helm-flask
-          cat ./Chart.yaml
-          cat ./values.yaml
-
       - name: Push Updated Charts to GitHub Argo-Repo ####### rsync tool already installed in github actions latest runners.
         env:
           HELM_REPO_PAT: ${{ secrets.HELM_REPO_PAT }}
@@ -471,7 +465,7 @@ jobs:
 
           ls argocd/helm-flask
           git status
-          
+
           rsync -avc --delete ./argocd/helm-flask/ ./argo/helm-flask/
           rsync -avc --delete ./argocd/log/ ./argo/log/
           rsync -avc --delete ./argocd/monitor-stack-argo/ ./argo/monitor-stack-argo/
