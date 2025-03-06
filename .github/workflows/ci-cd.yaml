@@ -469,9 +469,12 @@ jobs:
           git config --global user.email "github-actions@gmail.com"
           cd ..
 
-          rsync -av --delete ./argocd/helm-flask/ ./argo/helm-flask/
-          rsync -av --delete ./argocd/log/ ./argo/log/
-          rsync -av --delete ./argocd/monitor-stack-argo/ ./argo/monitor-stack-argo/
+          ls argocd/helm-flask
+          git status
+          
+          rsync -avc --delete ./argocd/helm-flask/ ./argo/helm-flask/
+          rsync -avc --delete ./argocd/log/ ./argo/log/
+          rsync -avc --delete ./argocd/monitor-stack-argo/ ./argo/monitor-stack-argo/
 
           cd argo/
           git status
