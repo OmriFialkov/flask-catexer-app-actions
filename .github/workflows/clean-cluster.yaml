@@ -71,17 +71,16 @@ jobs:
             service=$(kubectl get svc -n argocd | grep "argocd-server" | awk '{print $4}')   
 
             argocd login "$service" --username admin --password "$pass" --insecure
-            argocd app delete ---
-
+            argocd app delete app-of-apps --cascade --yes
+          
             argocd app list
-
           else
             echo "No Helm releases or ArgoCD applications found to clean up."
           fi
 
 
-# helm upgrade --install argocd argo/argo-cd -n argocd --set server.service.type=LoadBalancer
-
+# MANUAL DELETION:
+#_________________________________________________________________________________________________
 # kubectl delete application app-of-apps -n argocd || true
 # kubectl delete application flask-app -n argocd || true
 # kubectl delete application monitor-stack -n argocd || true
@@ -98,3 +97,5 @@ jobs:
 # kubectl delete all --all
 # kubectl delete configmap -l argocd.argoproj.io/instance=flask-app || true
 # kubectl delete secret -l argocd.argoproj.io/instance=flask-app || true
+
+#_________________________________________________________________________________________________

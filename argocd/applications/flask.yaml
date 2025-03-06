@@ -3,6 +3,9 @@ kind: Application
 metadata:
   name: flask-app  # Name of your application
   namespace: argocd  # Namespace where Argo CD is installed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argoproj.io/background
 spec:
   project: default  # Argo CD project; 'default' is commonly used
   source:
