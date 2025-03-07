@@ -3,15 +3,13 @@ name: ArgoCD
 on:
   push:
     paths:
-      - 'argocd/helm-flask/**'
-      - 'argocd/log/**'
-      - 'argocd/monitor-stack-argo/**'
+      - 'argocd/**'
       - 'app/**'
     branches:
       - main
 
-env:
-  IMAGE_NAME: crazyguy888/catexer-actions
+env: # +++++ another dockerhub repo
+  IMAGE_NAME: crazyguy888/catexer-actions-argocd
   IMAGE_TAG: 0.0.${{ github.run_number }}
 
 jobs:
@@ -99,7 +97,7 @@ jobs:
             curl -f http://localhost:${{ env.PORT }}
             echo "tests passed.."
 
-      - name: APP CI - Insert Image Tag to ArgoCD-Chart Values.yaml #######
+      - name: APP CI - Insert Image Tag to ArgoCD helm-flask Values.yaml #######
         if: env.APP_MODIFIED == 'true'
         run: |
           echo "updating image tag in argocd/helm-flask/values.yaml file to ${IMAGE_TAG}"
@@ -213,7 +211,7 @@ jobs:
 
       - name: Install Apps # app of apps
         run: |
-          kubectl apply -f argocd/app-of-apps.yaml
+          kubectl apply -f argocd-apps/app-of-apps.yaml
           echo "run this command to get password to argocd login page:"
           echo "kubectl get secret argocd-initial-admin-secret -n argocd \
               -o jsonpath=\"{.data.password}\" | base64 -d"

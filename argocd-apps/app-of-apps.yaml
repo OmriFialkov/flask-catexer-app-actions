@@ -8,7 +8,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/OmriFialkov/flask-catexer-app-actions
-    path: argocd/applications
+    path: argocd-apps/applications
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
