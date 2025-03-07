@@ -60,6 +60,8 @@ jobs:
             cleanup_helm_release "loki" "log"
             cleanup_helm_release "my-monitoring" "monitor"
 
+            echo "All Helm releases deleted!"
+
           elif kubectl get application -n argocd | grep -i "flask-app\|monitor-stack\|loki"; then
             echo "ArgoCD applications found. Cleaning up..."
 
@@ -71,9 +73,11 @@ jobs:
             service=$(kubectl get svc -n argocd | grep "argocd-server" | awk '{print $4}')   
 
             argocd login "$service" --username admin --password "$pass" --insecure
+
+            argocd app set app-of-apps --sync-policy none
             argocd app delete app-of-apps --cascade --yes
           
-            argocd app list
+            echo "all ArgoCD applications and resources deleted!"
           else
             echo "No Helm releases or ArgoCD applications found to clean up."
           fi
