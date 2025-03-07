@@ -1,7 +1,7 @@
 replicaCount: 4
 
 flaskApp:
-  image: crazyguy888/catexer-actions
+  image: crazyguy888/catexer-actions-argocd
   tag: latest
   port: 5000
   flaskEnv: development
