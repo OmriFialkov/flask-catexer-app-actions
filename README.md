@@ -58,8 +58,7 @@ Once deployed, Loki collects logs from the running application and other Kuberne
 ## 📦 Setup Instructions 
 
 To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
-Go to **GitHub Actions → Secrets** and add the following secrets.
-
+Go to **GitHub Actions → Secrets** and add these -
 ### 🔑 Required Secrets  
 
 #### GitHub Secrets:
@@ -129,9 +128,11 @@ terraform apply
 
 ---
 
-## ☸️ Kubernetes & Helm  ***************
+## ☸️ Kubernetes & Helm  
 
-In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application. Kubernetes ensures high availability and manages scaling.  The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments. Runs and manages the flask app in a scalable and automated way. helm Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
+Kubernetes is used for orchestrating the deployment and management of the flask app. The app is deployed and managed in a cluster, ensuring high availability & scalability for a seamless production environment. It helps ensure load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability.
+
+The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing installation, upgrades, and rollbacks of the application. It simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
 
 ### 🔹 How Helm is Used in This Project  
 
@@ -142,38 +143,30 @@ In this project, Kubernetes (k8s) is used for orchestrating the deployment and m
 
 ### 🔹 Deploying with Helm  
 
-Helm is used to deploy the Flask application to Kubernetes. The repository includes a Helm chart to manage application deployment.
-To install the application using Helm:  
+This repository includes a Helm chart to manage application deployment.
+To install / uninstall the application using Helm:  
 
 ```sh
 helm repo add catexer-repo <your-helm-repo-url>
 helm install $HELM_RELEASE_NAME catexer-repo/helm-flask
 ```
-
-To uninstall the application:  
-
 ```sh
 helm uninstall $HELM_RELEASE_NAME -n $NAMESPACE
 ```
-
 ---
 
-## Monitoring and Logging: Prometheus, Grafana & Loki **************
+## Monitoring and Logging: Prometheus, Grafana & Loki  
 
-To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.
-- **Prometheus**: Collects application and infrastructure metrics.
-  - **Grafana**: Visualizes data through dashboards.
-  - **Loki**: Collects and stores logs for easy querying and analysis.
+To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.  
 
 ### Prometheus
-Prometheus collects metrics from the Flask application and provides insights into request durations, error rates, and system performance. Ensure that the application exposes an endpoint (e.g., `/metrics`) for Prometheus to scrape data.
+A pull-based monitor tool. Prometheus collects metrics from the Flask application and provides insights into request durations, error rates, and system performance. In this project, the application exposes an endpoint (/metrics) for Prometheus to scrape data.
 
 ### Grafana
-Grafana connects to Prometheus as a data source, providing real-time dashboards for monitoring key metrics.
+Grafana connects to Prometheus as a data source, providing real-time dashboards for monitoring key metrics. It visualizes data through dashboards.
 
 ### Loki
-Loki centralizes logs from the Flask application, making it easier to query and analyze application behavior.
-Loki collects and aggregates logs, offering seamless log monitoring.   
+Loki centralizes logs from the Flask application and the apps running on the cluster, making it easier to query and analyze application behavior. It stores logs, offering seamless log monitoring and easy access. 
 
 ---
 
