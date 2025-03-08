@@ -1,26 +1,23 @@
 # Dog Gif App  
 
-## Overview  
+## Overview  ******************
 This project presents a **flask-based dockerized web-app** integrated in **GitHub Actions** Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another **MySQL** table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster** as part of IaC implementation. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project, adding **Prometheus, Grafana and Loki** as monitoring & logging tools. Recently integrated **ArgoCD**.
 
 ### Features
-- **Flask Web Application**: A lightweight Python web app.
-- **GitHub Actions CI/CD**: Automated building, testing and deployment.
-- **MySQL Database:** The primary database for storing and managing structured data efficiently.
-- **Docker Support**: Containerized, easy deployment.
-- **Cloud Integration**: Ready for deployment to AWS/GCP.
-- **Infrastructure as Code**: Terraform for cloud provisioning - a GKE cluster
--  **Kubernetes Deployment:** The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments. Runs and manages the flask app in a scalable and automated way. helm Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
-- **Monitoring & Logging**: Integrated Prometheus, Grafana, and Loki for observability -
-  - **Prometheus**: Collects application and infrastructure metrics.
-  - **Grafana**: Visualizes data through dashboards.
-  - **Loki**: Collects and stores logs for easy querying and analysis.
+- **Flask Web Application**: lightweight python web-app.
+- **GitHub Actions CI/CD**: automated build-test-deploy.
+- **MySQL DB:** storing and managing data efficiently. 
+- **Docker Support** containerized deployment.
+- **Cloud Integration**: deployment to GCP.
+- **Infrastructure as Code**: terraform for cloud provisioning - a GKE cluster.
+-  **Kubernetes Deployment:** containerized apps orchestration tool with automated scaling and high availability.
+- **Monitoring & Logging**: integrated Prometheus, Grafana, and Loki for observability.
 
 ---
 ## Project Flow Chart
 ![Flask](images/flask.drawio.png)
 
-### **CI/CD Flow Breakdown**  
+### **CI/CD Flow Breakdown**  *********************
 
 Below is a high-level overview of how the flask app functions from development to deployment:
 
@@ -105,18 +102,13 @@ The **Dockerfile** defines how the Flask app is packaged:
 ### 🔹 Docker Compose  
 
 A **docker-compose.yml** file is included to facilitate **local testing** before deployment. It allows running the app along with its database locally.  
-
 To test locally:  
 
 ```sh
 docker compose up --build
 ```
 
-After startup, you can verify the app is running using:  
-
-```sh
-curl http://localhost:5000
-```
+After startup, you can verify the app is running using curl. Don't forget to include .env.
 
 ---
 
@@ -137,9 +129,9 @@ terraform apply
 
 ---
 
-## ☸️ Kubernetes & Helm  
+## ☸️ Kubernetes & Helm  ***************
 
-In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application. Kubernetes ensures high availability and manages scaling.  
+In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application. Kubernetes ensures high availability and manages scaling.  The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments. Runs and manages the flask app in a scalable and automated way. helm Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
 
 ### 🔹 How Helm is Used in This Project  
 
@@ -166,9 +158,12 @@ helm uninstall $HELM_RELEASE_NAME -n $NAMESPACE
 
 ---
 
-## Monitoring and Logging: Prometheus, Grafana & Loki
+## Monitoring and Logging: Prometheus, Grafana & Loki **************
 
 To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.
+- **Prometheus**: Collects application and infrastructure metrics.
+  - **Grafana**: Visualizes data through dashboards.
+  - **Loki**: Collects and stores logs for easy querying and analysis.
 
 ### Prometheus
 Prometheus collects metrics from the Flask application and provides insights into request durations, error rates, and system performance. Ensure that the application exposes an endpoint (e.g., `/metrics`) for Prometheus to scrape data.
@@ -184,39 +179,25 @@ Loki collects and aggregates logs, offering seamless log monitoring.
 
 ## 🧹 Cleanup  
 
-To keep the environment clean and avoid unnecessary storage costs, several cleanup processes are included in the project:  
+To keep the environment clean and avoid unnecessary storage costs, two cleanup scripts are included in the project:
 
-### 🗑️ Docker Hub Image Cleanup  
+### 🗑️ Docker Hub Tag Cleanup  
+Over time, Docker tags can accumulate in Docker Hub, leading to clutter and storage issues. The `docker-clean.sh` script removes outdated tags to keep the repository clean. The script Fetches current tags from Docker Hub using the Docker API, then Compares tag creation dates and deletes tags older than **7 days**. You can adjust the time threshold to delete tags based on your current preferences.
 
-Over time, multiple Docker images can accumulate in **Docker Hub**, leading to unnecessary storage usage. To manage this, a **Docker Hub tags cleanup script** is included in the `cleanups/` directory. This script helps **remove outdated or untagged images** to keep your repository organized.  
+**How to use:**  
+```bash  
+bash cleanups/docker-clean.sh  
+```  
+> **Note:** Ensure that `DOCKER_USER`, `DOCKER_REPO`, and `DOCKERTOKEN` are set as environment variables for authentication.
 
-To execute the cleanup script:  
+### 🗑️ Helm Chart Cleanup  
+Helm charts used for deployments can accumulate over time in the helm-repo. The `helm-clean.sh` script removes older chart versions from a Helm repository hosted on GitHub Pages. The script clones the helm-repo and restores original file modification times, then lists `.tgz` files and deletes older versions, keeping only the latest **3** files. Finally, it rebuilds the `index.yaml` and pushes changes to the helm-repo.  
 
-```sh
-bash cleanups/docker-clean.sh
-```
-
-Ensure you have **Docker Hub credentials** set up to authenticate with the Docker API before running the script.  
-
-### 🗑️ Helm Chart Cleanup in GitHub Pages Helm Repo  
-
-Helm charts used for deploying the application are stored in a **Helm repository hosted on GitHub Pages**. Over time, as updates are made, older chart versions can accumulate, leading to clutter and unnecessary storage usage.  
-
-To clean up old Helm chart versions, a **bash script is provided in the `cleanups/` directory**. This script:  
-
-- **Clones the GitHub Pages Helm repository:** fetches a local copy of the repo to make changes.
-- **Restores original modification times:** it ensures the files retain their original modification times, keeping the history intact even after cloning.
-- **Identifies and deletes older versions:** The script lists all .tgz files (Helm chart archives) in the repository, sorts them by their age,
-   and removes the oldest versions while preserving the latest N versions (default is 3).
-- **Pushes changes:** commits and pushes the changes to the GitHub Pages repository, ensuring the cleanup is reflected in the live repository.  
-
-To execute the Helm chart cleanup script:  
-
-```sh
-bash cleanups/helm-clean.sh
-```
-
-This process helps you maintain a clean and organized Helm repository, ensuring that only the most recent and relevant chart versions are stored and available for deployments.
+**How to use:**  
+```bash  
+bash cleanups/helm-clean.sh  
+```  
+> **Note:** Ensure `HELM_REPO_PAT` is set as an environment variable for GitHub authentication, using PAT to clone the repo inside runner.
 
 ---
 
@@ -232,8 +213,8 @@ In this project a couple of security measures are used to ensure that:
 **( In early stages of this project an .env file was used to run docker compose locally & for testing )**
 
 ---
-
 ## Future Improvements
 
 - **SSL ( HTTPS ):** SSL encryption, securing data transmission & ensuring that all communications are encrypted.
-- **Vault:** managing secrets and particularly db passwords in whole project. 
+- **Vault:** managing secrets and particularly db passwords in whole project.
+---
