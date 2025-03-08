@@ -1,23 +1,27 @@
 # Dog Gif App  
 
-## Overview  ******************
-This project presents a **flask-based dockerized web-app** integrated in **GitHub Actions** Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another **MySQL** table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster** as part of IaC implementation. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project, adding **Prometheus, Grafana and Loki** as monitoring & logging tools. Recently integrated **ArgoCD**.
+## Overview
+This project presents a Flask-based web app containerized with **Docker** which is deployed to a **GCP Kubernetes cluster**. It dynamically serves random dog GIFs and tracks visitor counts using **MySQL**. A complete CI/CD pipeline powered by **GitHub Actions** builds the app, tests it with **Docker Compose**, and deploys it via **Helm**, while **Terraform** provisions the GKE cluster. Integrated observability is achieved with **Prometheus**, **Grafana**, **Loki**, and recently continuous delivery through **ArgoCD**.
 
-### Features
+### Key Components:
 - **Flask Web Application**: lightweight python web-app.
-- **GitHub Actions CI/CD**: automated build-test-deploy.
-- **MySQL DB:** storing and managing data efficiently. 
-- **Docker Support** containerized deployment.
-- **Cloud Integration**: deployment to GCP.
-- **Infrastructure as Code**: terraform for cloud provisioning - a GKE cluster.
--  **Kubernetes Deployment:** containerized apps orchestration tool with automated scaling and high availability.
-- **Monitoring & Logging**: integrated Prometheus, Grafana, and Loki for observability.
+- **MySQL DB:** Storing and managing data efficiently ( GIFS & Visitor Count )
+- **GitHub Actions CI/CD**: Automates the build, test, and deployment process of the flask app.
+- **Docker Support** Packages the app and its dependencies into a container.
+- **Terraform**: Provisions cloud infrastructure, the GKE cluster.
+- **K8S Deployment:** containerized apps orchestration tool with automated scaling and high availability.
+- **Helm** – Manages Kubernetes deployments, simplifying upgrades and maintenance.
+- **Prometheus** – Monitors application metrics.  
+- **Grafana** – Provides visualization and dashboards for monitoring data.  
+- **Loki** – Centralizes and stores application logs for easy analysis.  
+- **ArgoCD** – Automates Kubernetes deployments for continuous delivery.  
 
+This setup ensures the app is scalable, highly available, and easy to monitor.
 ---
 ## Project Flow Chart
 ![Flask](images/flask.drawio.png)
 
-### **CI/CD Flow Breakdown**  *********************
+### **CI/CD Flow Breakdown**  
 
 Below is a high-level overview of how the flask app functions from development to deployment:
 
@@ -25,33 +29,32 @@ Below is a high-level overview of how the flask app functions from development t
    When new code is pushed to the app/ path in the repository, GitHub Actions automatically detects the change and triggers the CI/CD pipeline. This ensures that every update follows a structured, automated deployment process.  
 
 2. **Building the Docker Image**  
-   The pipeline starts by building a new Docker image of the flask application. This image encapsulates all necessary dependencies and configurations, along with the updated code, ensuring a consistent runtime environment across deployments. The Dockerfile is used as a "recipe" to pack the flask app as a working docker- image.    
+   The pipeline starts by building a new Docker image of the flask application. This image encapsulates all necessary dependencies and configurations, along with the updated code, ensuring a consistent runtime environment across deployments. The Dockerfile is used as a "recipe" to pack the flask app as a working docker-image.    
 
 3. **Pushing the Image to Docker Hub**  
-   Once the Docker image is successfully built, it is pushed to Docker Hub, a public cloud container registry. Storing the image in Docker Hub will allow pulling it later on. Each flow run has a different github run-number used to tag the image that is pushed on every run. This way its easy to pull the image later by specifying its version, enabling stable version - management. 
+   Once the Docker image is successfully built, it is pushed to Docker Hub. Storing the image in Docker Hub will allow pulling it later on. Each flow run has a different github run-number used to tag the image that is pushed on every run. This way its easy to pull the image later by specifying its version, enabling stable version - management. 
 
 4. **Testing with Docker Compose**  
-   Before deploying to the production environment, a local test is executed using Docker Compose. This ensures that the containerized application runs as expected with no critical errors - before being deployed to the Kubernetes cluster. The test includes a curl to the flask app in order to verify the application is running correctly, sending a HTTP request to the app exposed port, 5000. to verify that the updated code doesn’t break the application's functionality.
+   Before deploying to the production environment, a local test is executed using Docker Compose. This ensures that the containerized application runs as expected with no critical errors - before being deployed to the Kubernetes cluster. The test includes a curl to the flask app in order to verify that the updated code doesn’t break the application's functionality, sending a HTTP request to the app exposed port, 5000.
 
 5. **Updating the Helm Chart**  
    After passing the test phase, the pipeline then uses Helm, a package manager for Kubernetes. Helm defines the application's infrastructure and configuration settings that will be deployed to the cluster as kubernetes manifests. Before packing, the github run-number, that is the same number in which the updated docker image is tagged - is inserted to the chart to ensure that later this image will be used to install/upgrade the helm release. The updated chart is packed and pushed to github pages helm repository. This step ensures that the latest updated chart is always available to install for deployment.
 
 6. **Infrastructure Provisioning with Terraform**  
-   Terraform manages the Kubernetes infrastructure by provisioning and maintaining the GKE (Google Kubernetes Engine) cluster, ensuring scalability and consistency. The tfstate file, which tracks resource states, is stored remotely in an S3 backend for centralized state management. To prevent conflicts in concurrent deployments, Terraform uses DynamoDB for state locking, ensuring only one operation modifies the infrastructure at a time.
+   Terraform manages the Kubernetes infrastructure by provisioning and maintaining the GKE (Google Kubernetes Engine) cluster. The tfstate file, which tracks resource states, is stored remotely in an S3 backend for centralized state management. To prevent conflicts in concurrent deployments, Terraform uses DynamoDB for state locking, ensuring only one operation modifies the infrastructure at a time.
 
 7. **Deploy to Kubernetes**
-   Once the infrastructure is set up, Helm deploys or upgrades a release in the Kubernetes cluster using the latest Helm chart version, which includes the newly built image. Since the Chart.yaml version is incremented and the updated image tag is pushed to values.yaml on every run, helm upgrade ensures that the new release is fully applied, replacing outdated resources with the latest configuration and container image.  When new code is pushed, the CI/CD pipeline rebuilds the Docker image and updates the deployment via Helm. If issues occur, previous versions can be rolled back using Helm.  
+   Once the infrastructure is set up, Helm deploys or upgrades a release in the Kubernetes cluster using the latest Helm chart version, which includes the newly built image. Since the Chart.yaml version is incremented and the updated image tag is pushed to values.yaml on every run, helm upgrade ensures that the new release is fully applied, replacing outdated resources with the latest configuration and container image.    
 
 8. **Exposing Metrics with Prometheus & Grafana**  
-   Prometheus and Grafana are installed using Helm. Once deployed, the application not only serves random dog GIFs but also exposes Prometheus-compatible metrics. These metrics include visitor counts and other key performance indicators, allowing real-time monitoring of the application's usage, health and stats. Prometheus continuously scrapes the application's exposed metrics, providing real-time insights into its behavior. These insights are visualized using monitoring tool Grafana, which is allowing a graphical user-friendly performance analysis.  
+   Prometheus and Grafana are installed using Helm. Once deployed, the application not only serves random dog GIFs but also exposes Prometheus-compatible metrics. These metrics include visitor counts and other key performance indicators, allowing real-time monitoring of the application's usage & health. Prometheus continuously scrapes the application's exposed metrics, providing real-time insights into its behavior. These insights are visualized using monitoring tool Grafana, which is allowing a graphical analysis.  
 
 9. **Continuous Logging and Issue Detection with Loki**
-Loki, a log aggregation system designed for Kubernetes, is deployed using Helm to enhance observability.
-Once deployed, Loki collects logs from the running application and other Kubernetes components, allowing for centralized log storage and easy retrieval. These logs are then accessible through Grafana, enabling real-time log analysis, troubleshooting, and debugging. This way, the system ensures that any errors, anomalies, or unexpected behaviors in the application can be quickly identified and addressed, improving reliability and maintainability.  
+Loki is deployed using Helm to enhance observability.
+Once deployed, Loki collects logs from the running application and other Kubernetes components, allowing for centralized log storage and easy retrieval. These logs are then accessible through Grafana, enabling real-time log analysis. This way, the system ensures that any errors or anomalies can be quickly identified and addressed, improving reliability and maintainability.  
 
-* **If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only Helm CI, then CD.**
-
-**This pipeline ensures that every code change is built, tested, validated, and deployed automatically while maintaining observability and infrastructure consistency. This flow ensures a fully automated, scalable, and monitored deployment of the flask app in the Kubernetes cluster on GCP.**
+**If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only Helm CI, then CD.**  
+**This flow ensures that every code change is built, tested & deployed automatically while maintaining observability, scalability and infrastructure consistency.**  
 
 ---
 
@@ -89,7 +92,7 @@ After configuring these secrets and variables, the GitHub Actions pipeline will 
 
 ## 🐳 Docker  
 
-The app is **containerized** using Docker, allowing it to be easily deployed in any environment.  
+The app is **containerized** using Docker, allowing it to be **easily deployed** in any environment.  
 
 ### 🔹 Dockerfile  
 
@@ -157,7 +160,7 @@ helm uninstall $HELM_RELEASE_NAME -n $NAMESPACE
 
 ## Monitoring and Logging: Prometheus, Grafana & Loki  
 
-To ensure application performance monitoring and effective debugging, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.  
+To ensure application performance monitoring and effective debugging & observability, Those tools are integrated: Prometheus for metrics collection, Grafana for visualization, and Loki for log aggregation.  
 
 ### Prometheus
 A pull-based monitor tool. Prometheus collects metrics from the Flask application and provides insights into request durations, error rates, and system performance. In this project, the application exposes an endpoint (/metrics) for Prometheus to scrape data.
