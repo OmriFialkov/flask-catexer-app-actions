@@ -14,9 +14,10 @@ This project presents a Flask-based web app containerized with **Docker** which 
 - **Prometheus** – Monitors application metrics.  
 - **Grafana** – Provides visualization and dashboards for monitoring data.  
 - **Loki** – Centralizes and stores application logs for easy analysis.  
-- **ArgoCD** – Automates Kubernetes deployments for continuous delivery.  
+- **ArgoCD** – Enables GitOps-based CD to Kubernetes clusters.
 
 This setup ensures the app is scalable, highly available, and easy to monitor.
+
 ---
 ## Project Flow Chart
 ![Flask](images/flask.drawio.png)
@@ -54,6 +55,7 @@ Loki is deployed using Helm to enhance observability.
 Once deployed, Loki collects logs from the running application and other Kubernetes components, allowing for centralized log storage and easy retrieval. These logs are then accessible through Grafana, enabling real-time log analysis. This way, the system ensures that any errors or anomalies can be quickly identified and addressed, improving reliability and maintainability.  
 
 **If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only Helm CI, then CD.**  
+
 **This flow ensures that every code change is built, tested & deployed automatically while maintaining observability, scalability and infrastructure consistency.**  
 
 ---
