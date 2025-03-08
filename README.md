@@ -1,16 +1,16 @@
 # Dog Gif App  
 
 ## Overview  
-This project presents a **flask-based dockerized web-app** integrated in GitHub Actions Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another MySQL table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster** as part of IaC implementation. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project.
+This project presents a **flask-based dockerized web-app** integrated in **GitHub Actions** Flow for CI/CD automation. The app dynamically serves a random dog GIF from a **dockerized MySQL database** every time the page is refreshed. It also keeps track of visitor count by another **MySQL** table. The GitHub Actions flow ensures every code update is **built and pushed** to Docker Hub, then **tested** with docker compose and is **deployed to a K8S cluster**. To manage the infrastructure efficiently, **Terraform** is used to provision the **Google Kubernetes Engine (GKE) cluster** as part of IaC implementation. Additionally, **Helm** is used for managing Kubernetes deployments, making it easier to deploy, update, and maintain the applications in this project, adding **Prometheus, Grafana and Loki** as monitoring & logging tools. Recently integrated **ArgoCD**.
 
 ### Features
 - **Flask Web Application**: A lightweight Python web app.
 - **GitHub Actions CI/CD**: Automated building, testing and deployment.
 - **MySQL Database:** The primary database for storing and managing structured data efficiently.
-- **Docker Support**: Containerized for easy deployment.
+- **Docker Support**: Containerized, easy deployment.
 - **Cloud Integration**: Ready for deployment to AWS/GCP.
 - **Infrastructure as Code**: Terraform for cloud provisioning - a GKE cluster
--  **Kubernetes Deployment:** The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments.
+-  **Kubernetes Deployment:** The application is deployed and managed in a Kubernetes cluster, ensuring high availability & scalability for a seamless production environment. Helm is used for the Kubernetes deployments. Runs and manages the flask app in a scalable and automated way. helm Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
 - **Monitoring & Logging**: Integrated Prometheus, Grafana, and Loki for observability -
   - **Prometheus**: Collects application and infrastructure metrics.
   - **Grafana**: Visualizes data through dashboards.
@@ -22,6 +22,8 @@ This project presents a **flask-based dockerized web-app** integrated in GitHub 
 
 ### **CI/CD Flow Breakdown**  
 
+Below is a high-level overview of how the flask app functions from development to deployment:
+
 1. **Code Push & CI/CD Pipeline Trigger**  
    When new code is pushed to the app/ path in the repository, GitHub Actions automatically detects the change and triggers the CI/CD pipeline. This ensures that every update follows a structured, automated deployment process.  
 
@@ -32,7 +34,7 @@ This project presents a **flask-based dockerized web-app** integrated in GitHub 
    Once the Docker image is successfully built, it is pushed to Docker Hub, a public cloud container registry. Storing the image in Docker Hub will allow pulling it later on. Each flow run has a different github run-number used to tag the image that is pushed on every run. This way its easy to pull the image later by specifying its version, enabling stable version - management. 
 
 4. **Testing with Docker Compose**  
-   Before deploying to the production environment, a local test is executed using Docker Compose. This ensures that the containerized application runs as expected with no critical errors - before being deployed to the Kubernetes cluster. The test includes a curl to the flask app in order to verify the application is running correctly, sending a HTTP request to the app exposed port, 5000.
+   Before deploying to the production environment, a local test is executed using Docker Compose. This ensures that the containerized application runs as expected with no critical errors - before being deployed to the Kubernetes cluster. The test includes a curl to the flask app in order to verify the application is running correctly, sending a HTTP request to the app exposed port, 5000. to verify that the updated code doesn’t break the application's functionality.
 
 5. **Updating the Helm Chart**  
    After passing the test phase, the pipeline then uses Helm, a package manager for Kubernetes. Helm defines the application's infrastructure and configuration settings that will be deployed to the cluster as kubernetes manifests. Before packing, the github run-number, that is the same number in which the updated docker image is tagged - is inserted to the chart to ensure that later this image will be used to install/upgrade the helm release. The updated chart is packed and pushed to github pages helm repository. This step ensures that the latest updated chart is always available to install for deployment.
@@ -41,7 +43,7 @@ This project presents a **flask-based dockerized web-app** integrated in GitHub 
    Terraform manages the Kubernetes infrastructure by provisioning and maintaining the GKE (Google Kubernetes Engine) cluster, ensuring scalability and consistency. The tfstate file, which tracks resource states, is stored remotely in an S3 backend for centralized state management. To prevent conflicts in concurrent deployments, Terraform uses DynamoDB for state locking, ensuring only one operation modifies the infrastructure at a time.
 
 7. **Deploy to Kubernetes**
-   Once the infrastructure is set up, Helm deploys or upgrades a release in the Kubernetes cluster using the latest Helm chart version, which includes the newly built image. Since the Chart.yaml version is incremented and the updated image tag is pushed to values.yaml on every run, helm upgrade ensures that the new release is fully applied, replacing outdated resources with the latest configuration and container image.  
+   Once the infrastructure is set up, Helm deploys or upgrades a release in the Kubernetes cluster using the latest Helm chart version, which includes the newly built image. Since the Chart.yaml version is incremented and the updated image tag is pushed to values.yaml on every run, helm upgrade ensures that the new release is fully applied, replacing outdated resources with the latest configuration and container image.  When new code is pushed, the CI/CD pipeline rebuilds the Docker image and updates the deployment via Helm. If issues occur, previous versions can be rolled back using Helm.  
 
 8. **Exposing Metrics with Prometheus & Grafana**  
    Prometheus and Grafana are installed using Helm. Once deployed, the application not only serves random dog GIFs but also exposes Prometheus-compatible metrics. These metrics include visitor counts and other key performance indicators, allowing real-time monitoring of the application's usage, health and stats. Prometheus continuously scrapes the application's exposed metrics, providing real-time insights into its behavior. These insights are visualized using monitoring tool Grafana, which is allowing a graphical user-friendly performance analysis.  
@@ -52,24 +54,16 @@ Once deployed, Loki collects logs from the running application and other Kuberne
 
 * **If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only Helm CI, then CD.**
 
-**This pipeline ensures that every code change is built, tested, validated, and deployed automatically while maintaining observability and infrastructure consistency.**
+**This pipeline ensures that every code change is built, tested, validated, and deployed automatically while maintaining observability and infrastructure consistency. This flow ensures a fully automated, scalable, and monitored deployment of the flask app in the Kubernetes cluster on GCP.**
 
 ---
 
 ## 📦 Setup Instructions 
 
-The following tools are widely used in this project:
-- **Python & Flask Module**
-- **Docker** - for containerized deployment
-- **Terraform** - for cloud infrastructure provisioning - a k8s cluster
-- **Kubernetes** -  Runs and manages the flask app in a scalable and automated way.
-- **Helm** - Simplifies Kubernetes deployments by packaging configurations and managing updates efficiently.
-- **GitHub Actions** - CI/CD Workflow
+To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
+Go to **GitHub Actions → Secrets** and add the following secrets.
 
 ### 🔑 Required Secrets  
-
-To use this project, you need to **configure all required secrets and variables** in your GitHub repository's **Actions > Secrets > Repository secrets / variables** section.  
-Go to **GitHub Actions → Secrets** and add the following secrets:  
 
 #### GitHub Secrets:
 - `dockeruser`: Docker username for login.
@@ -145,7 +139,7 @@ terraform apply
 
 ## ☸️ Kubernetes & Helm  
 
-In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application.  
+In this project, Kubernetes (k8s) is used for orchestrating the deployment and management of the flask app. It helps ensure scalability, load balancing, and fault tolerance by running the application in containers across multiple nodes. Kubernetes manages the deployment lifecycle, automates rollouts and rollbacks, and integrates with monitoring tools like Prometheus and Grafana for observability. The application is deployed in **Kubernetes (K8s) using Helm**, which simplifies and standardizes the deployment process. **Helm** acts as a package manager for Kubernetes, allowing for easy installation, upgrades, and rollbacks of the application. Kubernetes ensures high availability and manages scaling.  
 
 ### 🔹 How Helm is Used in This Project  
 
@@ -184,46 +178,7 @@ Grafana connects to Prometheus as a data source, providing real-time dashboards 
 
 ### Loki
 Loki centralizes logs from the Flask application, making it easier to query and analyze application behavior.
-
----
-
-## Security Considerations
-
-Ensuring security best practices is crucial to protect the application from vulnerabilities.
-In this project a couple of security measures are used to ensure that:
-
-- **GitHub Secrets:** Used for CI/CD pipeline credentials such as Docker and GitHub tokens, ensuring sensitive information isn't exposed.
-- **Kubernetes Secrets:** Database credentials are stored securely in base64-encoded Kubernetes secrets.
-- **Git and Docker Ignorance:** .gitignore and .dockerignore files prevent sensitive or unnecessary files from being tracked or added to Docker images.
-- **SSL ( HTTPS ):** SSL encryption is enabled to secure data transmission, ensuring that all communications are encrypted.
-
-**( In early stages of this project an .env file was used to run docker compose locally )**
-
----
-
-## 🔄 Application Flow  
-
-Below is a high-level overview of how the flask app functions from development to deployment:  
-
-1. **Development**: Developers work on the Flask application locally and can test it using Docker Compose.  
-2. **CI/CD Pipeline**:  
-   - Code is pushed to GitHub.  
-   - GitHub Actions trigger a build process.  
-   - The Flask application is built as a Docker image and pushed to Docker Hub.
-   - A test is executed using Docker Compose to verify that the updated code doesn’t break the application's functionality.
-3. **Kubernetes Deployment**:  
-   - The latest Docker image is pulled from Docker Hub.  
-   - Helm deploys the application to the GKE cluster.  
-   - Kubernetes ensures high availability and manages scaling.  
-4. **Monitoring & Logging**:  
-   - The application exposes **Prometheus-compatible metrics**.  
-   - Prometheus scrapes the metrics, providing real-time insights, showed later by grafana.
-   - Loki collects and aggregates logs, offering seamless log monitoring. 
-5. **Automatic Updates & Rollbacks**:  
-   - When new code is pushed, the CI/CD pipeline rebuilds the Docker image and updates the deployment via Helm.  
-   - If issues occur, previous versions can be rolled back using Helm.  
-
-This flow ensures a **fully automated, scalable, and monitored deployment** of the flask app in the **Kubernetes cluster on GCP**.  
+Loki collects and aggregates logs, offering seamless log monitoring.   
 
 ---
 
@@ -264,3 +219,21 @@ bash cleanups/helm-clean.sh
 This process helps you maintain a clean and organized Helm repository, ensuring that only the most recent and relevant chart versions are stored and available for deployments.
 
 ---
+
+## Security Considerations
+
+Ensuring security best practices is crucial to protect the application from vulnerabilities.
+In this project a couple of security measures are used to ensure that:
+
+- **GitHub Secrets:** Used for CI/CD pipeline credentials such as Docker and GitHub tokens, ensuring sensitive information isn't exposed.
+- **Kubernetes Secrets:** Database credentials are stored securely in base64-encoded Kubernetes secrets.
+- **Git and Docker Ignorance:** .gitignore and .dockerignore files prevent sensitive or unnecessary files from being tracked or added to Docker images.
+
+**( In early stages of this project an .env file was used to run docker compose locally & for testing )**
+
+---
+
+## Future Improvements
+
+- **SSL ( HTTPS ):** SSL encryption, securing data transmission & ensuring that all communications are encrypted.
+- **Vault:** managing secrets and particularly db passwords in whole project. 
