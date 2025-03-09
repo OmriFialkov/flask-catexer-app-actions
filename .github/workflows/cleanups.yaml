@@ -14,16 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3 # bash <script>
+        uses: actions/checkout@v3 # bash <script> or chmod +x <script> then ./<script>
 
       - name: cleaning up docker hub older tags
         run: |
-          chmod +x ./cleanups/docker-clean.sh
-          ./cleanups/docker-clean.sh
+          bash ./cleanups/docker-clean.sh
 
       - name: Cleaning Up Old Helm Charts in Helm Repo 
         run: |
-          cd cleanups
-          ls -lrta
-          chmod +x ./helm-clean.sh
-          ./helm-clean.sh
+          bash ./cleanups/helm-clean.sh
