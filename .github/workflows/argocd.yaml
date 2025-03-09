@@ -205,8 +205,7 @@ jobs:
                   echo "ArgoCD is already installed in the argocd namespace."
                 else
                   echo "ArgoCD is not installed. Proceeding with installation."
-                  helm install argocd argo/argo-cd -n argocd \
-                   --set server.service.type=LoadBalancer
+                  helm install argocd argo/argo-cd -n argocd
                 fi
 
       - name: Install Apps # app of apps
@@ -215,3 +214,6 @@ jobs:
           echo "run this command to get password to argocd login page:"
           echo "kubectl get secret argocd-initial-admin-secret -n argocd \
               -o jsonpath=\"{.data.password}\" | base64 -d"
+
+# BEFORE INGRESS - helm install argocd argo/argo-cd -n argocd \
+#                   --set server.service.type=LoadBalancer
