@@ -180,22 +180,21 @@ Loki centralizes logs from the Flask application and the apps running on the clu
 
 To keep the environment clean and avoid unnecessary storage costs, two cleanup scripts are included in the project:
 
-### 🗑️ Docker-Hub Tag Cleanup  
+### Docker-Hub Tag Cleanup  🗑️
 Over time, Docker tags can accumulate in Docker Hub, leading to clutter and storage issues. The `docker-clean.sh` script removes outdated tags to keep the repository clean. The script Fetches current tags from Docker Hub using the Docker API, then Compares tag creation dates and deletes tags older than **7 days**. You can adjust the time threshold to delete tags based on your current preferences.
- 
-```  
+
+``
 > **Note:** Ensure that `DOCKER_USER`, `DOCKER_REPO`, and `DOCKERTOKEN` are set as environment variables for authentication.
 
-### 🗑️ Helm Chart Cleanup  
+### Helm Chart Cleanup 🗑️ 
 Helm charts used for deployments can accumulate over time in the helm-repo. The `helm-clean.sh` script removes older chart versions from a Helm repository hosted on GitHub Pages. The script clones the helm-repo and restores original file modification times, then lists `.tgz` files and deletes older versions, keeping only the latest **3** files. Finally, it rebuilds the `index.yaml` and pushes changes to the helm-repo.  
 
-**How to use scripts:**  
-```bash  
-bash cleanups/docker-clean.sh / bash cleanups/helm-clean.sh
-
-```  
 > **Note:** Ensure `HELM_REPO_PAT` is set as an environment variable for GitHub authentication, using PAT to clone the repo inside runner.
 
+**How to Use:**  
+```bash  
+bash cleanups/docker-clean.sh / bash cleanups/helm-clean.sh
+```
 ---
 
 ## Security Considerations
