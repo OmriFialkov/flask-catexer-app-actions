@@ -53,9 +53,8 @@ Below is a high-level overview of how the flask app functions from development t
 9. **Continuous Logging and Issue Detection with Loki**
 Loki is deployed using Helm to enhance observability. Once deployed, Loki collects logs from the running application and other Kubernetes components, allowing for centralized log storage and easy retrieval. These logs are then accessible through Grafana, enabling real-time log analysis. This way, the system ensures that any errors or anomalies can be quickly identified, improving reliability and maintainability.   
 
-**If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only Helm CI, then CD.**  
-
 **This flow ensures that every code change is built, tested & deployed automatically while maintaining observability, scalability and infrastructure consistency.**  
+( If new code is pushed to charts directory where the flask app helm chart is, the CI skips the docker app build and does only helm chart update, then CD )   
 
 ---
 
@@ -183,7 +182,6 @@ To keep the environment clean and avoid unnecessary storage costs, two cleanup s
 ### Docker-Hub Tag Cleanup  🗑️
 Over time, Docker tags can accumulate in Docker Hub, leading to clutter and storage issues. The `docker-clean.sh` script removes outdated tags to keep the repository clean. The script Fetches current tags from Docker Hub using the Docker API, then Compares tag creation dates and deletes tags older than **7 days**. You can adjust the time threshold to delete tags based on your current preferences.
 
-``
 > **Note:** Ensure that `DOCKER_USER`, `DOCKER_REPO`, and `DOCKERTOKEN` are set as environment variables for authentication.
 
 ### Helm Chart Cleanup 🗑️ 
