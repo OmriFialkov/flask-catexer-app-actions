@@ -1,44 +1,41 @@
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: app-ingress
-#   namespace: default  # Ingress resource is deployed in "default" namespace
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /
-#     kubernetes.io/ingress.class: "nginx"  # Ensure NGINX handles this Ingress
-# spec:
-#   ingressClassName: nginx  # Matches the NGINX Ingress Controller
-#   rules:
-#   - http: # removed host: "*" - Allows access directly via domain or IP.
-#       paths: # No "host" field = match ALL incoming requests
-#       - path: /flask
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: flask-app-service  # Service in "default" (no namespace needed)
-#             port:
-#               number: 80
-#       - path: /argo
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: argocd-server       # Service in "argocd" namespace
-#             namespace: argocd         # Explicitly specify namespace
-#             port:
-#               number: 80
-#       - path: /prometheus
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: monitor-stack-prometheus-server  # Service in "monitor" namespace
-#             namespace: monitor                     # Explicit namespace
-#             port:
-#               number: 80
-#       - path: /grafana
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: monitor-stack-grafana  # Service in "monitor" namespace
-#             namespace: monitor           # Explicit namespace
-#             port:
-#               number: 80
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: default  # Ingress resource is deployed in "default" namespace
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "nginx"  # Ensure NGINX handles this Ingress
+spec:
+  ingressClassName: nginx  # Matches the NGINX Ingress Controller
+  rules:
+  - http: # removed host: "*" - Allows access directly via domain or IP.
+      paths: # No "host" field = match ALL incoming requests
+      - path: /app
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-app-service  # Service in "default" (no namespace needed)
+            port:
+              number: 80
+      - path: /argocd
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server.argocd.svc.cluster.local       # Service in "argocd" namespace
+            port:
+              number: 80
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: monitor-stack-prometheus-server.monitor.svc.cluster.local  # Service in "monitor" namespace
+            port:
+              number: 80
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name:  monitor-stack-grafana.monitor.svc.cluster.local  # Service in "monitor" namespace
+            port:
+              number: 80
