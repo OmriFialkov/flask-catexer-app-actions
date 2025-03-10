@@ -9,9 +9,8 @@ metadata:
 spec:
   ingressClassName: nginx  # Matches the NGINX Ingress Controller
   rules:
-  - host: "*"  # host: "*" - Allows access directly via public IP.
-    http:
-      paths:
+  - http: # removed host: "*" - Allows access directly via domain or IP.
+      paths: # No "host" field = match ALL incoming requests
       - path: /flask
         pathType: Prefix
         backend:
