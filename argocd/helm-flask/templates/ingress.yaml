@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1 # to test - curl http://34.123.45.67/prometheus for example
 kind: Ingress
 metadata:
   name: app-ingress
@@ -7,9 +7,8 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
-  rules:
-  - host: "*"   # Allow access via public IP or domain
-    http:
+  rules: # removed:   - host: "*"   # Allows access via public IP or domain
+  - http:
       paths:
       - path: /flask
         pathType: Prefix
