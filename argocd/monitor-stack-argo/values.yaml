@@ -31,7 +31,7 @@ grafana:
     date_format:
       default_timezone: "browser"
     server: # 2 configurations for /grafana ingress route to work
-      root_url: "http://$HOST/grafana/"
+      root_url: "/grafana/"
       serve_from_sub_path: true
   service:
     type: ClusterIP
