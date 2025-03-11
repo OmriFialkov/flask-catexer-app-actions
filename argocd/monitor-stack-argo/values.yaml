@@ -21,8 +21,8 @@ prometheus:
     persistentVolume:
       enabled: false  # Disable PV for simplicity
     extraArgs:
-      - --web.external-url=/prometheus
-      - --web.route-prefix=/prometheus
+      web.external-url: /prometheus
+      web.route-prefix: /prometheus
 
 
 
