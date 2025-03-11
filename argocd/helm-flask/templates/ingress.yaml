@@ -1,41 +1,85 @@
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
+# Ingress for the Flask app in the default namespace
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flask-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /app
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-app-service
+            port:
+              number: 80
+---
+# Ingress for ArgoCD in the argocd namespace
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /argocd
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 80
+---
+# Ingress for Prometheus and Grafana in the monitor namespace
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitor-ingress
+  namespace: monitor
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1  # Preserve subpaths
+    nginx.ingress.kubernetes.io/use-regex: "true"   
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /prometheus/?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: monitor-stack-prometheus-server
+            port:
+              number: 80
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: monitor-stack-grafana
+            port:
+              number: 80
+
+
+# apiVersion: v1 - didnt work!!!!!!
+# kind: Service
 # metadata:
-#   name: app-ingress
-#   namespace: default  # Ingress resource is deployed in "default" namespace
-#   annotations:
-#     nginx.ingress.kubernetes.io/rewrite-target: /
-#     kubernetes.io/ingress.class: "nginx"  # Ensure NGINX handles this Ingress
+#   name: grafana-external
+#   namespace: default
 # spec:
-#   ingressClassName: nginx  # Matches the NGINX Ingress Controller
-#   rules:
-#   - http: # removed host: "*" - Allows access directly via domain or IP.
-#       paths: # No "host" field = match ALL incoming requests
-#       - path: /app
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: flask-app-service  # Service in "default" (no namespace needed)
-#             port:
-#               number: 80
-#       - path: /argocd
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: argocd-server.argocd.svc.cluster.local       # Service in "argocd" namespace
-#             port:
-#               number: 80
-#       - path: /prometheus
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: monitor-stack-prometheus-server.monitor.svc.cluster.local  # Service in "monitor" namespace
-#             port:
-#               number: 80
-#       - path: /grafana
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name:  monitor-stack-grafana.monitor.svc.cluster.local  # Service in "monitor" namespace
-#             port:
-#               number: 80
+#   type: ExternalName
+#   externalName: monitor-stack-grafana.monitor.svc.cluster.local  # Points to Grafana in "monitor"
+#   ports:
+#     - port: 80
