@@ -65,7 +65,7 @@ spec:
             name: monitor-stack-prometheus-server
             port:
               number: 80
-      - path: /grafana/?(.*)
+      - path: /grafana(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:
