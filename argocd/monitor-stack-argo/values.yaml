@@ -20,9 +20,9 @@ prometheus:
   server:
     persistentVolume:
       enabled: false  # Disable PV for simplicity
-    extraArgs: # 2 configurations for /prometheus ingress route to work
-      web.route-prefix: /
-      web.external-url: /prometheus
+    # extraArgs: # 2 configurations for /prometheus ingress route to work
+    #   web.route-prefix: /
+    #   web.external-url: /prometheus
 
 
 grafana:
@@ -30,9 +30,9 @@ grafana:
   grafana.ini:
     date_format:
       default_timezone: "browser"
-    server: # 2 configurations for /grafana ingress route to work
-      root_url: "/grafana/"
-      serve_from_sub_path: true
+    # server: # 2 configurations for /grafana ingress route to work
+    #   root_url: "/grafana/"
+    #   serve_from_sub_path: true
   service:
     type: ClusterIP
   persistence:
@@ -50,7 +50,7 @@ grafana:
         - name: loki-auto
           type: loki
           uid: loki-omri
-          url: http://loki.log.svc.cluster.local:3100
+          url: http://loki.log.svc.cluster.local:3100 # loki service url
           access: proxy
           isDefault: false
           jsonData:
