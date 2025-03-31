@@ -2,7 +2,7 @@ replicaCount: 4
 
 flaskApp:
   image: crazyguy888/catexer-actions-argocd
-  tag: latest
+  tag: latest # will be edited dynamically
   port: 5000
   flaskEnv: development
   mysqlHost: mysql-service
